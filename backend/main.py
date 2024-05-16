@@ -105,6 +105,9 @@ def get_rides():
         (Ride.creator_id != current_user_id) &
         (func.count(Ride.members) < Ride.max_group_size)
     ).group_by(Ride.ride_id).all()
+
+    # TODO: add logic to sort this query result based on proximity to user current location and in chronological order of ealiest_arrival_time
+
     return jsonify([ride.to_json() for ride in rides])
 
 @app.route('/rides/<int:ride_id>', methods=['PUT'])
