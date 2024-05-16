@@ -1,0 +1,39 @@
+# Ignore virtual environments
+venv/
+env/
+*.venv/
+
+# Ignore compiled files
+*.class
+*.pyc
+*.o
+*.dll
+*.exe
+*.out
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore temporary files
+.DS_Store
+*.swp
+
+# Ignore log files
+*.log
+*.log.*
+*.out
+
+# Ignore environment configuration files
+.env
+*.env
+.env.*
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+.idea/
+
+# Ignore generated files
+build/
+dist/
+*.egg-info/
