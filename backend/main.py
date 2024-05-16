@@ -9,14 +9,20 @@ from datetime import datetime
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
+
+    required_fields = ['username', 'password', 'firstName', 'lastName', 'email', 'phoneNumber']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = User(
         username=data['username'],
         password=hashed_password,
-        first_name=data['first_name'],
-        last_name=data['last_name'],
+        first_name=data['firstName'],
+        last_name=data['lastName'],
         email=data['email'],
-        phone_number=data['phone_number']
+        phone_number=data['phoneNumber']
     )
     db.session.add(new_user)
     db.session.commit()
@@ -25,6 +31,10 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
+
+    if not data.get('username') or not data.get('password'):
+        return jsonify({"error": "Both username and password are required"}), 400
+
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
         session['user_id'] = user.user_id
@@ -45,10 +55,10 @@ def update_user_profile():
     user = User.query.get_or_404(current_user_id)
 
     data = request.json
-    user.first_name = data.get('first_name', user.first_name)
-    user.last_name = data.get('last_name', user.last_name)
+    user.first_name = data.get('firstName', user.first_name)
+    user.last_name = data.get('lastName', user.last_name)
     user.email = data.get('email', user.email)
-    user.phone_number = data.get('phone_number', user.phone_number)
+    user.phone_number = data.get('phoneNumber', user.phone_number)
 
     db.session.commit()
 
@@ -61,18 +71,24 @@ def create_ride():
 
     current_user_id = session['user_id']
     data = request.json
+
+    required_fields = ['pickupArea', 'destinationArea', 'pickupThreshold', 'destinationThreshold', 'earliestArrivalTime', 'latestArrivalTime', 'maxGroupSize', 'private', 'description', 'preferredApps']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
     new_ride = Ride(
         creator_id=current_user_id,
-        pickup_area=data['pickup_area'],
-        destination_area=data['destination_area'],
-        pickup_threshold=data['pickup_threshold'],
-        destination_threshold=data['destination_threshold'],
-        earliest_arrival_time=datetime.fromisoformat(data['earliest_arrival_time']),
-        latest_arrival_time=datetime.fromisoformat(data['latest_arrival_time']),
-        max_group_size=data['max_group_size'],
+        pickup_area=data['pickupArea'],
+        destination_area=data['destinationArea'],
+        pickup_threshold=data['pickupThreshold'],
+        destination_threshold=data['destinationThreshold'],
+        earliest_arrival_time=datetime.fromisoformat(data['earliestArrivalTime']),
+        latest_arrival_time=datetime.fromisoformat(data['latestArrivalTime']),
+        max_group_size=data['maxGroupSize'],
         private=data['private'],
         description=data['description'],
-        preferred_apps=data['preferred_apps']
+        preferred_apps=data['preferredApps']
     )
     db.session.add(new_ride)
     db.session.commit()
@@ -103,16 +119,16 @@ def update_ride(ride_id):
     if len(ride.members) > 1:
         return jsonify({"message": "Cannot modify ride with other members"}), 403
     data = request.json
-    ride.pickup_area = data.get('pickup_area', ride.pickup_area)
-    ride.destination_area = data.get('destination_area', ride.destination_area)
-    ride.pickup_threshold = data.get('pickup_threshold', ride.pickup_threshold)
-    ride.destination_threshold = data.get('destination_threshold', ride.destination_threshold)
-    ride.earliest_arrival_time = datetime.fromisoformat(data.get('earliest_arrival_time', ride.earliest_arrival_time.isoformat()))
-    ride.latest_arrival_time = datetime.fromisoformat(data.get('latest_arrival_time', ride.latest_arrival_time.isoformat()))
-    ride.max_group_size = data.get('max_group_size', ride.max_group_size)
+    ride.pickup_area = data.get('pickupArea', ride.pickup_area)
+    ride.destination_area = data.get('destinationArea', ride.destination_area)
+    ride.pickup_threshold = data.get('pickupThreshold', ride.pickup_threshold)
+    ride.destination_threshold = data.get('destinationThreshold', ride.destination_threshold)
+    ride.earliest_arrival_time = datetime.fromisoformat(data.get('earliestArrivalTime', ride.earliest_arrival_time.isoformat()))
+    ride.latest_arrival_time = datetime.fromisoformat(data.get('latestArrivalTime', ride.latest_arrival_time.isoformat()))
+    ride.max_group_size = data.get('maxGroupSize', ride.max_group_size)
     ride.private = data.get('private', ride.private)
     ride.description = data.get('description', ride.description)
-    ride.preferred_apps = data.get('preferred_apps', ride.preferred_apps)
+    ride.preferred_apps = data.get('preferredApps', ride.preferred_apps)
     db.session.commit()
     return jsonify(ride.to_json())
 
