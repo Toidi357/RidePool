@@ -5,6 +5,7 @@ from datetime import datetime
 
 from sqlalchemy import func
 from datetime import datetime
+from geolocation import get_location
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -38,6 +39,13 @@ def login():
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
         session['user_id'] = user.user_id
+
+        # Capture the location
+        location_data = get_location()
+        user.latitude = location_data['latitude']['lat']
+        user.longitude = location_data['longitude']['lng']
+        db.session.commit()
+        
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
