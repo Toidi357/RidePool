@@ -12,8 +12,10 @@ class Ride(db.Model):
     __tablename__ = 'ride'
     ride_id = Column(Integer, primary_key=True)
     creator_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
-    pickup_area = Column(String(120), nullable=False)
-    destination_area = Column(String(120), nullable=False)
+    pickup_longitude = Column(Float, nullable=False)
+    pickup_latitude = Column(Float, nullable=False)
+    destination_longitude = Column(Float, nullable=False)
+    destination_latitude = Column(Float, nullable=False)
     pickup_threshold = Column(Float, nullable=False)
     destination_threshold = Column(Float, nullable=False)
     earliest_arrival_time = Column(DateTime, nullable=False)
@@ -33,8 +35,10 @@ class Ride(db.Model):
         return {
             "rideId": self.ride_id,
             "creatorId": self.creator_id,
-            "pickupArea": self.pickup_area,
-            "destinationArea": self.destination_area,
+            "pickupLongitude": self.pickup_longitude,
+            "pickupLatitude": self.pickup_latitude,
+            "destinationLongitude": self.destination_longitude,
+            "destinationLatitude": self.destination_latitude,
             "pickupThreshold": self.pickup_threshold,
             "destinationThreshold": self.destination_threshold,
             "earliestArrivalTime": self.earliest_arrival_time.isoformat(),
