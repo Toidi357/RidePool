@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy import func
 from datetime import datetime
 from geolocation import get_location
+from geopy.distance import distance
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -80,15 +81,17 @@ def create_ride():
     current_user_id = session['user_id']
     data = request.json
 
-    required_fields = ['pickupArea', 'destinationArea', 'pickupThreshold', 'destinationThreshold', 'earliestArrivalTime', 'latestArrivalTime', 'maxGroupSize', 'private', 'description', 'preferredApps']
+    required_fields = ['pickupLongitude', 'pickupLatitude', 'destinationLongitude', 'destinationLatitude', 'pickupThreshold', 'destinationThreshold', 'earliestArrivalTime', 'latestArrivalTime', 'maxGroupSize', 'private', 'description', 'preferredApps']
     for field in required_fields:
         if not data.get(field):
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
     new_ride = Ride(
         creator_id=current_user_id,
-        pickup_area=data['pickupArea'],
-        destination_area=data['destinationArea'],
+        pickup_longitude=data['pickupLongitude'],
+        pickup_latitude=data['pickupLatitude'],
+        destination_longitude=data['destinationLongitude'],
+        destination_latitude=data['destinationLatitude'],
         pickup_threshold=data['pickupThreshold'],
         destination_threshold=data['destinationThreshold'],
         earliest_arrival_time=datetime.fromisoformat(data['earliestArrivalTime']),
@@ -103,7 +106,7 @@ def create_ride():
     return jsonify(new_ride.to_json()), 201
 
 @app.route('/rides', methods=['GET'])
-def get_rides():
+def get_rides(rideFilter, pickupThreshold = 0):
     if 'user_id' not in session:
         return jsonify({"message": "Unauthorized"}), 401
 
@@ -114,9 +117,27 @@ def get_rides():
         (func.count(Ride.members) < Ride.max_group_size)
     ).group_by(Ride.ride_id).all()
 
-    # TODO: add logic to sort this query result based on proximity to user current location and in chronological order of ealiest_arrival_time
+    current_time = datetime.now()
+    sortedRide = []
+    if rideFilter == 'location':
+        sortedRide = sorted(rides, key=lambda ride: distance((User.latitude, User.longitude),(ride.pickup_latitude, ride.pickup_longitude)).miles)
+    elif rideFilter == 'earliestArrivalTime':
+        sortedRide = sorted(rides, key=lambda ride: abs((ride.earliest_arrival_time - current_time).total_seconds()))
+    elif rideFilter == 'latestArrivalTime':
+        sortedRide = sorted(rides, key=lambda ride: abs((ride.latest_arrival_time - current_time).total_seconds()))
+    elif rideFilter == 'private':
+        for r in rides:
+            if r.private == True:
+                sortedRide.append(r)
+    elif rideFilter == 'public':
+        for r in rides:
+            if r.private == False:
+                sortedRide.append(r)
+    elif rideFilter == 'pickupThreshold':
+        sortedRide = [ride for ride in rides if distance((User.latitude, User.longitude), (ride.latitude, ride.longitude)).miles <= pickupThreshold]
 
-    return jsonify([ride.to_json() for ride in rides])
+
+    return jsonify([ride.to_json() for ride in sortedRide])
 
 @app.route('/rides/<int:ride_id>', methods=['PUT'])
 def update_ride(ride_id):
@@ -130,8 +151,10 @@ def update_ride(ride_id):
     if len(ride.members) > 1:
         return jsonify({"message": "Cannot modify ride with other members"}), 403
     data = request.json
-    ride.pickup_area = data.get('pickupArea', ride.pickup_area)
-    ride.destination_area = data.get('destinationArea', ride.destination_area)
+    ride.pickup_longitude = data.get('pickupLongitude', ride.pickup_longitude)
+    ride.pickup_latitude = data.get('pickupLatitude', ride.pickup_latitude)
+    ride.destination_longitude = data.get('destinationLongitude', ride.destination_longitude)
+    ride.destination_latitude = data.get('destinationLatitude', ride.destination_latitude)
     ride.pickup_threshold = data.get('pickupThreshold', ride.pickup_threshold)
     ride.destination_threshold = data.get('destinationThreshold', ride.destination_threshold)
     ride.earliest_arrival_time = datetime.fromisoformat(data.get('earliestArrivalTime', ride.earliest_arrival_time.isoformat()))
