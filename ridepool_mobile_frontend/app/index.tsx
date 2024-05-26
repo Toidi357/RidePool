@@ -1,15 +1,49 @@
-import { Text, View } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import axios from 'axios';
 
-export default function Index() {
+export default function App() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://172.23.158.243:5000/test');
+        
+        // On the backend, there is a simple get endpoint that returns this object
+        // {"response": "connection successful"}
+        // here's how to unpack it: 
+
+        console.log(response.data); // {"response": "connection successful"}
+        console.log(response.data["response"]) // connection successful
+
+      } 
+      catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+    <View style={styles.container}>
+      {error ? (
+        <Text>Error: Unable to connect to the backend.</Text>
+      ) : (
+        <Text>Insert login screen</Text>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

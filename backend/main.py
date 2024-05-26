@@ -8,6 +8,7 @@ from datetime import datetime
 from geolocation import get_location
 from geopy.distance import distance
 
+
 @app.route('/test', methods = ['GET']) 
 def test():
     return jsonify({'response': 'connection successful'})
@@ -247,10 +248,8 @@ def get_user_upcoming_rides():
     return jsonify([ride.to_json() for ride in upcoming_rides]), 200
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all() 
 
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
 
 
 
