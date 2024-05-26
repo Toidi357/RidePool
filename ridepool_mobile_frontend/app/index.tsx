@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
 
+import { PC_IPV4_ADDRESS } from '@env';
+
 export default function App() {
-  const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://172.23.158.243:5000/test');
+        const response = await axios.get(`http://${PC_IPV4_ADDRESS}/test`);
         
         // On the backend, there is a simple get endpoint that returns this object
         // {"response": "connection successful"}
