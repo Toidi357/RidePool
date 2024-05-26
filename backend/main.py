@@ -8,6 +8,10 @@ from datetime import datetime
 from geolocation import get_location
 from geopy.distance import distance
 
+@app.route('/test', methods = ['GET']) 
+def test():
+    return jsonify({'response': 'connection successful'})
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
