@@ -1,23 +1,30 @@
 # RidePool
  RidePool 35L Final Project
 
- to run/test the frontend
+ Full Instructions to run from scratch:
  
+
+ Frontend
+ 
+ - get ipv4 address (ipconfig or ifconfig commands)
+ 
+ - replace PC_IPV4_ADDRESS variable in ridepool_mobile_frontend/.env
+
  - install expo go on your mobile device
 
- cd ridepool_mobile_frontend
+ `cd ridepool_mobile_frontend`
+
+ `npm install`
  
- npm install
- 
- npx expo start
+ `npx expo start`
  
  - make sure your mobile phone & PC are on the same network
  
  - use the expo go app to scan the QR code that pops up
 
  
- to run the backend: 
+ Backend:
  
- cd backend
+ `cd backend`
  
- python main.py
+ `python main.py`
