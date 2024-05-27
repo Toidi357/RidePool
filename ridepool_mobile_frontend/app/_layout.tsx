@@ -1,58 +1,66 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-export default function TabLayout() {
+import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import Login from '@/app/login';
+import OverviewScreen from '@/app/tabs/overview';
+import MyRidepoolsScreen from '@/app/tabs/my_ridepools';
+import ProfileScreen from '@/app/tabs/profile';
+
+const Tab = createBottomTabNavigator();
+
+function TabLayout() {
   const colorScheme = useColorScheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-      }}>
-      <Tabs.Screen
-        name="(tabs)/overview"
-        options={{
-          title: 'All Ridepools',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'search' : 'search-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(tabs)/my_ridepools"
-        options={{
-          title: 'My Ridepools',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'car' : 'car-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(tabs)/profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(tabs)/index"
-        options={{
-          title: 'Main',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <>
+      {!isLoggedIn ? (
+        <Login changeLogin={setIsLoggedIn} />
+      ) : (
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ color, focused }) => {
+              let iconName;
 
+              if (route.name === 'tabs/overview') {
+                iconName = focused ? 'search' : 'search-outline';
+              } else if (route.name === 'tabs/my_ridepools') {
+                iconName = focused ? 'car' : 'car-outline';
+              } else if (route.name === 'tabs/profile') {
+                iconName = focused ? 'person' : 'person-outline';
+              }
 
-    
+              return <TabBarIcon name={iconName} color={color} />;
+            },
+            tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+            headerShown: false,
+          })}
+        >
+          <Tab.Screen
+            name="tabs/overview"
+            component={OverviewScreen}
+            options={{ title: 'All Ridepools' }}
+          />
+          <Tab.Screen
+            name="tabs/my_ridepools"
+            component={MyRidepoolsScreen}
+            options={{ title: 'My Ridepools' }}
+          />
+          <Tab.Screen
+            name="tabs/profile"
+            component={ProfileScreen}
+            options={{ title: 'Profile' }}
+          />
+        </Tab.Navigator>
+      )}
+    </>
   );
+}
+
+export default function App() {
+  return <TabLayout />;
 }
