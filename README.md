@@ -8,7 +8,7 @@
  
  - get ipv4 address (ipconfig or ifconfig commands)
  
- - replace PC_IPV4_ADDRESS variable in ridepool_mobile_frontend/.env
+ - replace SERVER_IPV4_ADDRESS variable in ridepool_mobile_frontend/.env
 
  - install expo go on your mobile device
 

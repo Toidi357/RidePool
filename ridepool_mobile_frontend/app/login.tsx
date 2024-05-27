@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
-import { PC_IPV4_ADDRESS } from '@env';
+import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@env';
+import { StackRouter } from '@react-navigation/native';
 
 export default function Login({ changeLogin }) {
   const [error, setError] = useState(null);
@@ -25,7 +26,7 @@ export default function Login({ changeLogin }) {
     };
     try {
       console.log("button pressed");
-      const response = await axios.post(`http://${PC_IPV4_ADDRESS}/login`, form, {
+      const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/login`, form, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -48,7 +49,7 @@ export default function Login({ changeLogin }) {
       phoneNumber: phoneNumberRef.current,
     };
     try {
-      const response = await axios.post(`http://${PC_IPV4_ADDRESS}/register`, form, {
+      const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/register`, form, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -64,7 +65,7 @@ export default function Login({ changeLogin }) {
   useEffect(() => {
     const testConnect = async () => {
       try {
-        const response = await axios.get(`http://${PC_IPV4_ADDRESS}/test`);
+        const response = await axios.get(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/test`);
         
         console.log(response.data); // {"response": "connection successful"}
         console.log(response.data["response"]); // connection successful

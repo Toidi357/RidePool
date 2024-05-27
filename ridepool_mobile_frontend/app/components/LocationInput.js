@@ -1,6 +1,5 @@
-// LocationInput.js
 import React, { useState, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import axios from 'axios';
 
@@ -19,20 +18,20 @@ const LocationInput = ({ label, onLocationSelected }) => {
     }
   };
 
-  const handleOutsidePress = () => {
-    if (isFocused) {
-        // console.log("NOT FOCUSED!")
-      setIsFocused(false);
-      setSuggestions([]);
-      Keyboard.dismiss();
-    }
+
+  const handleItemPress = (item) => {
+    setQuery(item.display_name);
+    setSuggestions([]);
+    setIsFocused(false);
+    onLocationSelected(item);
+    Keyboard.dismiss();
   };
 
   return (
     <TouchableWithoutFeedback >
       <View>
         <TextInput
-        onEndEditing={handleOutsidePress}
+          
           label={label}
           value={query}
           onChangeText={(text) => {
@@ -45,22 +44,16 @@ const LocationInput = ({ label, onLocationSelected }) => {
         />
         {isFocused && suggestions.length > 0 && (
           <View style={{ maxHeight: 200 }}>
-            <FlatList
-              data={suggestions}
-              keyExtractor={(item) => item.place_id.toString()}
-              renderItem={({ item }) => (
+            <ScrollView style={{ flexGrow: 0 }} nestedScrollEnabled={true} >
+              {suggestions.map((item) => (
                 <TouchableOpacity
-                  onPress={() => {
-                    setQuery(item.display_name);
-                    setSuggestions([]);
-                    onLocationSelected(item);
-                  }}
+                  key={item.place_id}
+                  onPress={() => handleItemPress(item)}
                 >
                   <Text style={{ padding: 10 }}>{item.display_name}</Text>
                 </TouchableOpacity>
-              )}
-              style={{ flexGrow: 0 }}
-            />
+              ))}
+            </ScrollView>
           </View>
         )}
       </View>

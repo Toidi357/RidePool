@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationInput from '../components/LocationInput';
@@ -30,7 +30,7 @@ const RidepoolForm = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <LocationInput label="Pickup location" onLocationSelected={(loc) => console.log(loc)} />
       <TextInput
         label="Pickup radius (miles)"
@@ -93,7 +93,7 @@ const RidepoolForm = () => {
       <Button mode="contained" onPress={() => console.log('Form submitted!')}>
         Create Ridepool
       </Button>
-    </View>
+    </ScrollView>
   );
 };
 
