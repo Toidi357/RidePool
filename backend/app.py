@@ -96,10 +96,10 @@ def update_user_profile():
 @app.route('/rides', methods=['POST'])
 def create_ride():
 
-    # FOR TESTING PURPOSES ONLY, current_user_id IS SET TO 0.
+    # FOR TESTING PURPOSES ONLY, current_user_id IS SET TO 1.
     # PLEASE CHANGE THIS CODE TO WHATEVER THE CORRECT AUTHENTICATION IS.
 
-    current_user_id = 0
+    current_user_id = 1
 
     # if 'user_id' not in session:
     #     return jsonify({"message": "Unauthorized"}), 401
@@ -132,6 +132,11 @@ def create_ride():
         description=data['description'],
         # preferred_apps=data['preferredApps']
     )
+
+    # Need to set up proper associations!
+    # new_ride.creator.append(user)
+
+
     db.session.add(new_ride)
     db.session.commit()
     return jsonify(new_ride.to_json()), 201
@@ -253,15 +258,40 @@ def get_ride_members(ride_id):
     members = ride.members
     return jsonify([member.to_json() for member in members]), 200
 
-@app.route('/users/rides', methods=['GET'])
+@app.route('/users/rides', methods=['GET', 'POST'])
 def get_user_rides():
-    if 'user_id' not in session:
-        return jsonify({"message": "Unauthorized"}), 401
+    # FOR TESTING PURPOSES ONLY, current_user_id IS SET TO 1.
+    # PLEASE CHANGE THIS CODE TO WHATEVER THE CORRECT AUTHENTICATION IS.
 
-    current_user_id = session['user_id']
+    current_user_id = 1
+    print("request received for user 1")
+
+    data = request.json
+    ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'   
+
     user = User.query.get_or_404(current_user_id)
-    rides = user.rides
-    return jsonify([ride.to_json() for ride in rides]), 200
+    created_rides = user.created_rides
+    member_rides = user.rides
+
+    print(user)
+
+    now = datetime.now()
+
+    def filter_rides(rides, ride_type):
+        if ride_type == 'current':
+            return [ride for ride in rides if ride.latest_pickup_time > now]
+        elif ride_type == 'history':
+            return [ride for ride in rides if ride.latest_pickup_time <= now]
+        else:  # 'all'
+            return rides
+
+    filtered_created_rides = filter_rides(created_rides, ride_type)
+    filtered_member_rides = filter_rides(member_rides, ride_type)
+
+    return jsonify({
+        "created_rides": [ride.to_json() for ride in filtered_created_rides],
+        "member_rides": [ride.to_json() for ride in filtered_member_rides]
+    }), 200
 
 @app.route('/users/upcoming_rides', methods=['GET'])
 def get_user_upcoming_rides():
