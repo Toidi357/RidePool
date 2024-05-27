@@ -1,7 +1,12 @@
 from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship
 from config import db
-from datetime import datetime
+import datetime
+from flask import current_app as app
+import jwt
+
+with app.app_context():
+    SECRET_KEY = app.config['SECRET_KEY']
 
 user_ride_association = Table('user_ride_association', db.Model.metadata,
     Column('user_id', Integer, ForeignKey('user.user_id'), primary_key=True),
@@ -29,7 +34,7 @@ class Ride(db.Model):
     members = relationship('User', secondary=user_ride_association, back_populates='rides')
 
     def has_not_happened_yet(self):
-        return self.latest_pickup_time > datetime.now()
+        return self.latest_pickup_time > datetime.datetime.now()
 
     def to_json(self):
         return {
@@ -77,4 +82,38 @@ class User(db.Model):
             "longitude": self.longitude,
             "rides": [ride.to_json() for ride in self.rides]
         }
+    
+    def encode_auth_token(self, username):
+        """
+        Generates the Auth Token
+        :return: string
+        """
+        try:
+            payload = {
+                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=0, seconds=5),
+                'iat': datetime.datetime.now(datetime.UTC),
+                'sub': username
+            }
+            return jwt.encode(
+                payload,
+                SECRET_KEY,
+                algorithm='HS256'
+            )
+        except Exception as e:
+            return e
+    
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        Decodes the auth token
+        :param auth_token:
+        :return: integer|string
+        """
+        try:
+            payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
+            return payload['sub'] # this returns the username
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again.'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again.'
     

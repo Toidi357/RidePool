@@ -11,11 +11,7 @@ from geolocation import get_location
 from geopy.distance import distance
 
 from flask_migrate import Migrate
-import os
-
 migrate = Migrate(app, db)
-
-app.config['SECRET_KEY'] = os.urandom(24)
 
 @app.route('/test', methods = ['GET']) 
 def test():
@@ -33,6 +29,11 @@ def register():
         if not data.get(field):
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
+    # check if user already exists
+    user = User.query.filter_by(username=data['username']).first()
+    if user:
+        return jsonify({"error": f"User already exists. Please log in."}), 409
+
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = User(
         username=data['username'],
@@ -44,7 +45,8 @@ def register():
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"message": "User registered successfully"}), 201
+    auth_token = new_user.encode_auth_token(new_user.username)
+    return jsonify({"message": "User registered successfully", "auth_token": auth_token}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
