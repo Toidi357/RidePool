@@ -37,4 +37,10 @@
 
  ## For Developers
 
- Do all the above steps, but also instll SQL Lite browser and set it to point to backend/instance/myinstance.db to view the database while the app is running. 
+ Do all the above steps, but also instll SQLite browser and set it to point to backend/instance/myinstance.db to view the database while the app is running. 
+
+ If you've made a change to the database models in model.py and would like to update the database:
+ 
+ `flask db migrate -m "message"`
+
+ `flask db upgrade`

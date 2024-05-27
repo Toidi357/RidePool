@@ -13,6 +13,7 @@ import ProfileScreen from '@/app/tabs/profile';
 
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
 
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 

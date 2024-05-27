@@ -3,6 +3,8 @@ from config import app, db, bcrypt
 from models import User, Ride
 from datetime import datetime
 
+from dateutil import parser
+
 from sqlalchemy import func
 from datetime import datetime
 from geolocation import get_location
@@ -93,15 +95,24 @@ def update_user_profile():
 
 @app.route('/rides', methods=['POST'])
 def create_ride():
-    if 'user_id' not in session:
-        return jsonify({"message": "Unauthorized"}), 401
 
-    current_user_id = session['user_id']
+    # FOR TESTING PURPOSES ONLY, current_user_id IS SET TO 0.
+    # PLEASE CHANGE THIS CODE TO WHATEVER THE CORRECT AUTHENTICATION IS.
+
+    current_user_id = 0
+
+    # if 'user_id' not in session:
+    #     return jsonify({"message": "Unauthorized"}), 401
+
+    # current_user_id = session['user_id']
+
     data = request.json
 
-    required_fields = ['pickupLongitude', 'pickupLatitude', 'destinationLongitude', 'destinationLatitude', 'pickupThreshold', 'destinationThreshold', 'earliestArrivalTime', 'latestArrivalTime', 'maxGroupSize', 'private', 'description', 'preferredApps']
+    required_fields = ['pickupLongitude', 'pickupLatitude', 'destinationLongitude', 'destinationLatitude', 'pickupThreshold', 'destinationThreshold', 'earliestPickupTime', 'latestPickupTime', 'maxGroupSize', 'private', 'description'] # , 'preferredApps'
+
     for field in required_fields:
-        if not data.get(field):
+        if field not in data:
+            print(f"Missing required field: {field}")
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
     new_ride = Ride(
@@ -112,12 +123,14 @@ def create_ride():
         destination_latitude=data['destinationLatitude'],
         pickup_threshold=data['pickupThreshold'],
         destination_threshold=data['destinationThreshold'],
-        earliest_arrival_time=datetime.fromisoformat(data['earliestArrivalTime']),
-        latest_arrival_time=datetime.fromisoformat(data['latestArrivalTime']),
+        # earliest_arrival_time=datetime.fromisoformat(data['earliestArrivalTime']),
+        # latest_arrival_time=datetime.fromisoformat(data['latestArrivalTime']),
+        earliest_pickup_time=parser.isoparse(data['earliestPickupTime']),
+        latest_pickup_time=parser.isoparse(data['latestPickupTime']),
         max_group_size=data['maxGroupSize'],
         private=data['private'],
         description=data['description'],
-        preferred_apps=data['preferredApps']
+        # preferred_apps=data['preferredApps']
     )
     db.session.add(new_ride)
     db.session.commit()
@@ -130,7 +143,7 @@ def get_rides(rideFilter, pickupThreshold = 0):
 
     current_user_id = session['user_id']
     rides = Ride.query.filter(
-        (Ride.earliest_arrival_time > datetime.now()) & # obviously, need a better way of checking if a ride is complete or not. maybe a boolean status for completion set asynch after time passes latest_arrival_time
+        (Ride.earliest_pickup_time > datetime.now()) & # obviously, need a better way of checking if a ride is complete or not. maybe a boolean status for completion set asynch after time passes latest_arrival_time
         (Ride.creator_id != current_user_id) &
         (func.count(Ride.members) < Ride.max_group_size)
     ).group_by(Ride.ride_id).all()
@@ -139,10 +152,10 @@ def get_rides(rideFilter, pickupThreshold = 0):
     sortedRide = []
     if rideFilter == 'location':
         sortedRide = sorted(rides, key=lambda ride: distance((User.latitude, User.longitude),(ride.pickup_latitude, ride.pickup_longitude)).miles)
-    elif rideFilter == 'earliestArrivalTime':
-        sortedRide = sorted(rides, key=lambda ride: abs((ride.earliest_arrival_time - current_time).total_seconds()))
-    elif rideFilter == 'latestArrivalTime':
-        sortedRide = sorted(rides, key=lambda ride: abs((ride.latest_arrival_time - current_time).total_seconds()))
+    elif rideFilter == 'earliestPickupTime':
+        sortedRide = sorted(rides, key=lambda ride: abs((ride.earliest_pickup_time - current_time).total_seconds()))
+    elif rideFilter == 'latestPickupTime':
+        sortedRide = sorted(rides, key=lambda ride: abs((ride.latest_pickup_time - current_time).total_seconds()))
     elif rideFilter == 'private':
         for r in rides:
             if r.private == True:
@@ -175,12 +188,12 @@ def update_ride(ride_id):
     ride.destination_latitude = data.get('destinationLatitude', ride.destination_latitude)
     ride.pickup_threshold = data.get('pickupThreshold', ride.pickup_threshold)
     ride.destination_threshold = data.get('destinationThreshold', ride.destination_threshold)
-    ride.earliest_arrival_time = datetime.fromisoformat(data.get('earliestArrivalTime', ride.earliest_arrival_time.isoformat()))
-    ride.latest_arrival_time = datetime.fromisoformat(data.get('latestArrivalTime', ride.latest_arrival_time.isoformat()))
+    ride.earliest_pickup_time = datetime.fromisoformat(data.get('earliestArrivalTime', ride.earliest_pickup_time.isoformat()))
+    ride.latest_pickup_time = datetime.fromisoformat(data.get('latestArrivalTime', ride.latest_pickup_time.isoformat()))
     ride.max_group_size = data.get('maxGroupSize', ride.max_group_size)
     ride.private = data.get('private', ride.private)
     ride.description = data.get('description', ride.description)
-    ride.preferred_apps = data.get('preferredApps', ride.preferred_apps)
+    # ride.preferred_apps = data.get('preferredApps', ride.preferred_apps)
     db.session.commit()
     return jsonify(ride.to_json())
 
@@ -208,7 +221,7 @@ def join_ride(ride_id):
     return jsonify({"message": "User joined the ride successfully"}), 200
 
 def ride_conflicts(ride1, ride2):
-    return ride1.latest_arrival_time > ride2.earliest_arrival_time and ride2.latest_arrival_time > ride1.earliest_arrival_time
+    return ride1.latest_pickup_time > ride2.earliest_pickup_time and ride2.latest_pickup_time > ride1.earliest_pickup_time
 
 @app.route('/rides/<int:ride_id>/leave', methods=['POST'])
 def leave_ride(ride_id):
@@ -257,7 +270,7 @@ def get_user_upcoming_rides():
 
     current_user_id = session['user_id']
     user = User.query.get_or_404(current_user_id)
-    upcoming_rides = [ride for ride in user.rides if ride.latest_arrival_time > datetime.now()]
+    upcoming_rides = [ride for ride in user.rides if ride.latest_pickup_time > datetime.now()]
     return jsonify([ride.to_json() for ride in upcoming_rides]), 200
 
 if __name__ == "__main__":

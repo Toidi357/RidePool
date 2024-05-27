@@ -3,7 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity, TouchableWithoutFeedback, Key
 import { TextInput } from 'react-native-paper';
 import axios from 'axios';
 
-const LocationInput = ({ label, onLocationSelected }) => {
+// need default parameters or sum shi
+const LocationInput = ({ label = "Location", onLocationSelected = () => {} } ) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [isFocused, setIsFocused] = useState(false);

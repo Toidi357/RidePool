@@ -18,8 +18,8 @@ class Ride(db.Model):
     destination_latitude = Column(Float, nullable=False)
     pickup_threshold = Column(Float, nullable=False)
     destination_threshold = Column(Float, nullable=False)
-    earliest_arrival_time = Column(DateTime, nullable=False)
-    latest_arrival_time = Column(DateTime, nullable=False)
+    earliest_pickup_time = Column(DateTime, nullable=False)
+    latest_pickup_time = Column(DateTime, nullable=False)
     max_group_size = Column(Integer, nullable=False)
     private = Column(Boolean, default=False)
     description = Column(String(500))
@@ -29,7 +29,7 @@ class Ride(db.Model):
     members = relationship('User', secondary=user_ride_association, back_populates='rides')
 
     def has_not_happened_yet(self):
-        return self.latest_arrival_time > datetime.now()
+        return self.latest_pickup_time > datetime.now()
 
     def to_json(self):
         return {
@@ -41,12 +41,12 @@ class Ride(db.Model):
             "destinationLatitude": self.destination_latitude,
             "pickupThreshold": self.pickup_threshold,
             "destinationThreshold": self.destination_threshold,
-            "earliestArrivalTime": self.earliest_arrival_time.isoformat(),
-            "latestArrivalTime": self.latest_arrival_time.isoformat(),
+            "earliestPickupTime": self.earliest_pickup_time.isoformat(),
+            "latestPickupTime": self.latest_pickup_time.isoformat(),
             "maxGroupSize": self.max_group_size,
             "private": self.private,
             "description": self.description,
-            "preferredApps": self.preferred_apps,
+            # "preferredApps": self.preferred_apps,
             "members": [member.user_id for member in self.members]
         }
 
