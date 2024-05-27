@@ -1,10 +1,10 @@
 # RidePool
  RidePool 35L Final Project
 
- Full Instructions to run from scratch:
+ ## First-Time Run:
  
 
- Frontend
+ ### Frontend
  
  - get ipv4 address (ipconfig or ifconfig commands)
  
@@ -23,8 +23,13 @@
  - use the expo go app to scan the QR code that pops up
 
  
- Backend:
+ ### Backend:
  
  `cd backend`
  
  `python main.py`
+
+
+ ## For Developers
+
+ Do all the above steps, but also instll SQL Lite browser and set it to point to backend/instance/myinstance.db to view the database while the app is running. 
