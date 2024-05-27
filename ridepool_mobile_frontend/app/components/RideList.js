@@ -65,7 +65,7 @@ export default RideList = ({ rides, displayRelationship }) => {
       {rides != null ? (
         <ScrollView style={styles.container}>
           {rides.map(ride => (
-            <RideCard key={ride.id} ride={ride} displayRelationship={displayRelationship} />
+            <RideCard key={ride.rideId} ride={ride} displayRelationship={displayRelationship} />
           ))}
         </ScrollView>
       ) : (

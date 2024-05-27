@@ -63,13 +63,13 @@ export default function App({ username }) {
         <Text style={styles.label}>Active</Text>
       </View>
 
-      {currentRides != null ? <RideList rides = {currentRides}/> : (<></>)}
+      {currentRides != null ? <RideList displayRelationship = {true} rides = {currentRides}/> : (<></>)}
 
       <View style={styles.listContainer}>
         <Text style={styles.label}>History</Text>
       </View>
 
-      {historyRides != null ? <RideList rides = {historyRides}/> : (<></>)}
+      {historyRides != null ? <RideList displayRelationship = {true} rides = {historyRides}/> : (<></>)}
       
     </ScrollView>
   );
