@@ -13,6 +13,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app) 
 bcrypt = Bcrypt(app)
 
+
 app.config['SECRET_KEY'] = os.urandom(24)
 
 app.app_context().push()

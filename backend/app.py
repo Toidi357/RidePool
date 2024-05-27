@@ -1,6 +1,6 @@
 from flask import request, jsonify, session
 from config import app, db, bcrypt
-from models import User, Ride
+from models import User, Ride, BlacklistToken
 from datetime import datetime
 
 from dateutil import parser
@@ -21,8 +21,6 @@ def test():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
-
-    print(data)
 
     required_fields = ['username', 'password', 'firstName', 'lastName', 'email', 'phoneNumber']
     for field in required_fields:
@@ -52,30 +50,86 @@ def register():
 def login():
     data = request.json
 
-    print(data)
-
     if not data.get('username') or not data.get('password'):
         return jsonify({"error": "Both username and password are required"}), 400
 
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
-        session['user_id'] = user.user_id
-
-        # Capture the location
-
-        location_data = get_location()
-        print(location_data)
-        user.latitude = location_data['location']['lat']
-        user.longitude = location_data['location']['lng']
-        db.session.commit()
+        auth_token = user.encode_auth_token(user.username)
+        if auth_token:
+            responseObject = {
+                'message': 'Successfully logged in.',
+                'auth_token': auth_token,
+            }
+            # Capture the location
+            location_data = get_location()
+            print(location_data)
+            user.latitude = location_data['location']['lat']
+            user.longitude = location_data['location']['lng']
+            
+            return jsonify(responseObject), 200
         
-        return jsonify({"message": "Login successful"}), 200
     return jsonify({"message": "Invalid credentials"}), 401
+
+@app.route('/profile', methods=['GET'])
+def get_user_profile():
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            auth_token = auth_header.split(" ")[1]
+        except IndexError:
+            responseObject = {
+                'message': 'Bearer token malformed.'
+            }
+            return jsonify(responseObject), 401
+    else:
+        auth_token = ''
+    if auth_token: # means user *has* a token
+        # resp should contain an object with the decoded token details
+        # if its a string, that means its an error
+        resp = User.decode_auth_token(auth_token)
+        
+        if not isinstance(resp, str):
+            user = User.query.filter_by(username=resp['sub']).first()
+            responseObject = {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone_number': user.phone_number,
+            }
+            return jsonify(responseObject), 200
+        
+        # special error message if token is expired
+        if resp == 'Signature expired. Please log in again.':
+            return jsonify({"message": "Expired"}), 401
+    
+    return jsonify({'message': "Unauthorized"}), 401
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    session.pop('user_id', None)
-    return jsonify({"message": "Logout successful"}), 200
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        auth_token = auth_header.split(" ")[1]
+    else:
+        auth_token = ''
+    if auth_token:
+        resp = User.decode_auth_token(auth_token)
+        if not isinstance(resp, str):
+            # mark the token as blacklisted
+            blacklist_token = BlacklistToken(token=auth_token)
+            try:
+                # insert the token
+                db.session.add(blacklist_token)
+                db.session.commit()
+                responseObject = {
+                    'message': 'Logout successful'
+                }
+                return jsonify(responseObject), 200
+            except Exception as e:
+                return jsonify({'message': 'Error'}), 500
+            
+    return jsonify({"message": "Unauthorized"}), 401
 
 @app.route('/users/profile', methods=['PUT'])
 def update_user_profile():

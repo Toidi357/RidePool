@@ -4,10 +4,7 @@ from config import db
 import datetime
 from flask import current_app as app
 import jwt
-
-with app.app_context():
-    SECRET_KEY = app.config['SECRET_KEY']
-
+    
 user_ride_association = Table('user_ride_association', db.Model.metadata,
     Column('user_id', Integer, ForeignKey('user.user_id'), primary_key=True),
     Column('ride_id', Integer, ForeignKey('ride.ride_id'), primary_key=True)
@@ -90,7 +87,7 @@ class User(db.Model):
         """
         try:
             payload = {
-                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=0, seconds=5),
+                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=0, seconds=50),
                 'iat': datetime.datetime.now(datetime.UTC),
                 'sub': username
             }
@@ -110,10 +107,45 @@ class User(db.Model):
         :return: integer|string
         """
         try:
-            payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
-            return payload['sub'] # this returns the username
+            payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'), algorithms=["HS256"])
+            is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            if is_blacklisted_token:
+                return 'Invalid token. Please log in again.'
+            return payload # this returns the username
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
+
+
+class BlacklistToken(db.Model):
+    """
+    Token Model for storing JWT tokens
+    """
+    __tablename__ = 'blacklist_tokens'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    token = db.Column(db.String(500), unique=True, nullable=False)
+    blacklisted_on = db.Column(db.DateTime, nullable=False)
+
+    def __init__(self, token):
+        self.token = token
+        self.blacklisted_on = datetime.datetime.now()
+
+    def __repr__(self):
+        return '<id: token: {}'.format(self.token)
     
+    @staticmethod
+    def check_blacklist(auth_token):
+        res = BlacklistToken.query.filter_by(token=str(auth_token)).first()
+        if res:
+            return True  
+        else:
+            return False
+    
+with app.app_context():
+    SECRET_KEY = app.config['SECRET_KEY']
+    db.create_all()
+    num = db.session.query(BlacklistToken).delete()
+    db.session.commit()
+    print(f"Cleared blacklisted_tokens of {num} entries")
