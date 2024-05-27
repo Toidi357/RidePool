@@ -27,7 +27,7 @@
  
  `cd backend`
  
- `python main.py`
+ `python app.py`
 
 
  ## For Developers
