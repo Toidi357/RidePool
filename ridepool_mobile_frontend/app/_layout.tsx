@@ -15,6 +15,7 @@ const Tab = createBottomTabNavigator();
 function TabLayout() {
   const colorScheme = useColorScheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [acccount, setAccount] = 
 
   return (
     <>
