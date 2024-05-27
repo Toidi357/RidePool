@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -10,17 +11,29 @@ import OverviewScreen from '@/app/tabs/overview';
 import MyRidepoolsScreen from '@/app/tabs/my_ridepools';
 import ProfileScreen from '@/app/tabs/profile';
 
+import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
+
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function MyRidepoolsStack() {
+  return(
+    <Stack.Navigator>
+      <Stack.Screen name="My Ridepools" component={MyRidepoolsScreen} />
+      <Stack.Screen name="Create Ridepool" component={CreateRidepoolScreen} />
+    </Stack.Navigator>
+
+  )
+}
 
 function TabLayout() {
   const colorScheme = useColorScheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [acccount, setAccount] = 
 
   return (
     <>
       {!isLoggedIn ? (
-        <Login changeLogin={setIsLoggedIn} />
+        <Login changeLogin={setIsLoggedIn}/>
       ) : (
         <Tab.Navigator
           screenOptions={({ route }) => ({
@@ -48,7 +61,7 @@ function TabLayout() {
           />
           <Tab.Screen
             name="tabs/my_ridepools"
-            component={MyRidepoolsScreen}
+            component={MyRidepoolsStack}
             options={{ title: 'My Ridepools' }}
           />
           <Tab.Screen

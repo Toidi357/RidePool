@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { PC_IPV4_ADDRESS } from '@env';
 
@@ -7,32 +7,24 @@ export default function Login({ changeLogin }) {
   const [error, setError] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
 
-  const [form, setForm] = useState({
-    username: '',
-    password: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: ''
-  });
+  const usernameRef = useRef('');
+  const passwordRef = useRef('');
+  const firstNameRef = useRef('');
+  const lastNameRef = useRef('');
+  const emailRef = useRef('');
+  const phoneNumberRef = useRef('');
 
-  const handleInputChange = (name, value) => {
-    setForm({ ...form, [name]: value });
+  const handleInputChange = (ref, value) => {
+    ref.current = value;
   };
 
   const submitLogin = async () => {
-    /*
-    some sample data
-
-    {
-        'username': 'A',
-        'password': 'B',
-      }
-
-    
-    */
-
+    const form = {
+      username: usernameRef.current,
+      password: passwordRef.current,
+    };
     try {
+      console.log("button pressed");
       const response = await axios.post(`http://${PC_IPV4_ADDRESS}/login`, form, {
         headers: {
           'Content-Type': 'application/json',
@@ -47,6 +39,14 @@ export default function Login({ changeLogin }) {
   };
 
   const submitRegister = async () => {
+    const form = {
+      username: usernameRef.current,
+      password: passwordRef.current,
+      firstName: firstNameRef.current,
+      lastName: lastNameRef.current,
+      email: emailRef.current,
+      phoneNumber: phoneNumberRef.current,
+    };
     try {
       const response = await axios.post(`http://${PC_IPV4_ADDRESS}/register`, form, {
         headers: {
@@ -57,24 +57,19 @@ export default function Login({ changeLogin }) {
       console.log(response.data);
       changeLogin(true); 
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('Error during registration:', error);
     }
   };
 
-  useEffect(() => { // the same as componentDidMount
+  useEffect(() => {
     const testConnect = async () => {
       try {
         const response = await axios.get(`http://${PC_IPV4_ADDRESS}/test`);
         
-        // On the backend, there is a simple get endpoint that returns this object
-        // {"response": "connection successful"}
-        // here's how to unpack it: 
-
         console.log(response.data); // {"response": "connection successful"}
-        console.log(response.data["response"]) // connection successful
+        console.log(response.data["response"]); // connection successful
 
-      } 
-      catch (err) {
+      } catch (err) {
         console.error('Error fetching data:', err);
         setError(err);
       }
@@ -83,8 +78,8 @@ export default function Login({ changeLogin }) {
     testConnect();
   }, []);
 
-  const Form_component = () => (
-    <View style={styles.container}>
+  const FormComponent = () => (
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.formContainer}>
         {isLogin ? (
           <View>
@@ -92,17 +87,15 @@ export default function Login({ changeLogin }) {
             <TextInput
               style={styles.input}
               placeholder="Username"
-              value={form.username}
-              onChangeText={(text) => handleInputChange('username', text)}
+              onChangeText={(text) => handleInputChange(usernameRef, text)}
             />
             <TextInput
               style={styles.input}
               placeholder="Password"
               secureTextEntry
-              value={form.password}
-              onChangeText={(text) => handleInputChange('password', text)}
+              onChangeText={(text) => handleInputChange(passwordRef, text)}
             />
-            <Button title="Submit" onPress={() => submitLogin()} />
+            <Button title="Submit" onPress={submitLogin} />
           </View>
         ) : (
           <View>
@@ -110,41 +103,35 @@ export default function Login({ changeLogin }) {
             <TextInput
               style={styles.input}
               placeholder="Username"
-              value={form.username}
-              onChangeText={(text) => handleInputChange('username', text)}
+              onChangeText={(text) => handleInputChange(usernameRef, text)}
             />
             <TextInput
               style={styles.input}
               placeholder="Password"
               secureTextEntry
-              value={form.password}
-              onChangeText={(text) => handleInputChange('password', text)}
+              onChangeText={(text) => handleInputChange(passwordRef, text)}
             />
             <TextInput
               style={styles.input}
               placeholder="First Name"
-              value={form.firstName}
-              onChangeText={(text) => handleInputChange('firstName', text)}
+              onChangeText={(text) => handleInputChange(firstNameRef, text)}
             />
             <TextInput
               style={styles.input}
               placeholder="Last Name"
-              value={form.lastName}
-              onChangeText={(text) => handleInputChange('lastName', text)}
+              onChangeText={(text) => handleInputChange(lastNameRef, text)}
             />
             <TextInput
               style={styles.input}
               placeholder="Email"
-              value={form.email}
-              onChangeText={(text) => handleInputChange('email', text)}
+              onChangeText={(text) => handleInputChange(emailRef, text)}
             />
             <TextInput
               style={styles.input}
               placeholder="Phone Number"
-              value={form.phoneNumber}
-              onChangeText={(text) => handleInputChange('phoneNumber', text)}
+              onChangeText={(text) => handleInputChange(phoneNumberRef, text)}
             />
-            <Button title="Submit" onPress={() => submitRegister()} />
+            <Button title="Submit" onPress={submitRegister} />
           </View>
         )}
         <View style={styles.switchContainer}>
@@ -155,21 +142,27 @@ export default function Login({ changeLogin }) {
           />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.outerContainer}>
       {error ? (
         <Text>Error: Network Connection</Text>
       ) : (
-        <Form_component/>
+        <FormComponent/>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',

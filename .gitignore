@@ -24,9 +24,6 @@ node_modules/
 *.out
 
 # Ignore environment configuration files
-.env
-*.env
-.env.*
 
 # Ignore system files
 .DS_Store

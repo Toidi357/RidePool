@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button } from 'react-native';
 import axios from 'axios';
 import { PC_IPV4_ADDRESS } from '@env';
+import { useNavigation } from '@react-navigation/native';
 
-export default function App() {
+export default function App({ username }) {
   const [error, setError] = useState(null);
+
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
-        <Text>my ridepools</Text>
+        <Button title = "Create Ridepool" onPress = {() => navigation.navigate('CreateRidepool')}/>
     </View>
   );
 }

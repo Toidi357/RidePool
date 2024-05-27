@@ -22,6 +22,11 @@
  
  - use the expo go app to scan the QR code that pops up
 
+ Alternatively, if expo doesn't connect, you can try:
+
+ - entering the "exp:" link manually (might look like exp://172.23.53.2:8081)
+
+ - running `npx expo --tunnel` and entering the "exp:" link (might look like exp://njzgnlw-anonymous-8081.exp.direct)
  
  ### Backend:
  

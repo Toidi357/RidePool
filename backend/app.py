@@ -19,6 +19,7 @@ app.config['SECRET_KEY'] = os.urandom(24)
 def test():
     return jsonify({'response': 'connection successful'})
 
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
