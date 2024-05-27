@@ -11,7 +11,7 @@ export default function App({ username }) {
 
   return (
     <View style={styles.container}>
-        <Button title = "Create Ridepool" onPress = {() => navigation.navigate('CreateRidepool')}/>
+        <Button title = "Create Ridepool" onPress = {() => navigation.navigate('Create Ridepool')}/>
     </View>
   );
 }
