@@ -2,6 +2,7 @@ from flask import request, jsonify, session
 from config import app, db, bcrypt
 from models import User, Ride
 from datetime import datetime
+import logging
 
 from dateutil import parser
 
@@ -15,6 +16,8 @@ import os
 
 migrate = Migrate(app, db)
 
+logging.basicConfig(filename = 'app.log', level = logging.DEBUG, format = '%(asctime)s - %(levelname)s - %(message)s')
+
 app.config['SECRET_KEY'] = os.urandom(24)
 
 @app.route('/test', methods = ['GET']) 
@@ -25,6 +28,8 @@ def test():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
+
+    logging.info(f"Received registration request: {data}")
 
     print(data)
 
@@ -44,6 +49,7 @@ def register():
     )
     db.session.add(new_user)
     db.session.commit()
+    logging.info(f"User registered succesfully: {new_user.username}")
     return jsonify({"message": "User registered successfully"}), 201
 
 @app.route('/login', methods=['POST'])
@@ -51,6 +57,7 @@ def login():
     data = request.json
 
     print(data)
+    logging.info(f"Received login request data: {data}")
 
     if not data.get('username') or not data.get('password'):
         return jsonify({"error": "Both username and password are required"}), 400
@@ -67,12 +74,16 @@ def login():
         user.longitude = location_data['location']['lng']
         db.session.commit()
         
+        logging.info(f"User {user.username} logged in succesfully")
         return jsonify({"message": "Login successful"}), 200
+    
+    logging.warning("Invalid login credentials")
     return jsonify({"message": "Invalid credentials"}), 401
 
 @app.route('/logout', methods=['GET'])
 def logout():
     session.pop('user_id', None)
+    logging.info("User logged out succesfully")
     return jsonify({"message": "Logout successful"}), 200
 
 @app.route('/users/profile', methods=['PUT'])
@@ -84,12 +95,17 @@ def update_user_profile():
     user = User.query.get_or_404(current_user_id)
 
     data = request.json
+
+    logging.info(f"User {current_user_id} is updating their profile")
+    logging.info(f"Updated profile data received: {data}")
     user.first_name = data.get('firstName', user.first_name)
     user.last_name = data.get('lastName', user.last_name)
     user.email = data.get('email', user.email)
     user.phone_number = data.get('phoneNumber', user.phone_number)
 
     db.session.commit()
+
+    logging.info("User profile updated succesfully")
 
     return jsonify({"message": "User profile updated successfully"}), 200
 
@@ -108,11 +124,16 @@ def create_ride():
 
     data = request.json
 
+    logging.info(f"User {current_user_id} is attempting to create a new ride")
+
+    logging.info (f"Received data for ride creation: {data}")
+
     required_fields = ['pickupLongitude', 'pickupLatitude', 'destinationLongitude', 'destinationLatitude', 'pickupThreshold', 'destinationThreshold', 'earliestPickupTime', 'latestPickupTime', 'maxGroupSize', 'private', 'description'] # , 'preferredApps'
 
     for field in required_fields:
         if field not in data:
             print(f"Missing required field: {field}")
+            logging.warning(f"Missing required field: {field}")
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
     new_ride = Ride(
@@ -139,54 +160,75 @@ def create_ride():
 
     db.session.add(new_ride)
     db.session.commit()
+
+    logging.info (f"New ride created succesfully: {new_ride.to_json()}")
     return jsonify(new_ride.to_json()), 201
 
 @app.route('/rides', methods=['GET'])
 def get_rides(rideFilter, pickupThreshold = 0):
     if 'user_id' not in session:
+        logging.warning("Unauthorized access attempt to get rides")
         return jsonify({"message": "Unauthorized"}), 401
 
     current_user_id = session['user_id']
+    logging.info(f"User {current_user_id} is attempting to retreive with filter: {rideFilter} and pickup threshold: {pickupThreshold}")
     rides = Ride.query.filter(
         (Ride.earliest_pickup_time > datetime.now()) & # obviously, need a better way of checking if a ride is complete or not. maybe a boolean status for completion set asynch after time passes latest_arrival_time
         (Ride.creator_id != current_user_id) &
         (func.count(Ride.members) < Ride.max_group_size)
     ).group_by(Ride.ride_id).all()
 
+    logging.info(f"Retrieved {len(rides)} rides from the database")
+
     current_time = datetime.now()
     sortedRide = []
     if rideFilter == 'location':
+        logging.info("Sorting rides by location")
         sortedRide = sorted(rides, key=lambda ride: distance((User.latitude, User.longitude),(ride.pickup_latitude, ride.pickup_longitude)).miles)
     elif rideFilter == 'earliestPickupTime':
+        logging.info("Sorting rides by earliest pickup time")
         sortedRide = sorted(rides, key=lambda ride: abs((ride.earliest_pickup_time - current_time).total_seconds()))
     elif rideFilter == 'latestPickupTime':
+        logging.info("Sorting rides by latest pickup time")
         sortedRide = sorted(rides, key=lambda ride: abs((ride.latest_pickup_time - current_time).total_seconds()))
     elif rideFilter == 'private':
+        logging.info("Filtering rides to show only private rides")
         for r in rides:
             if r.private == True:
                 sortedRide.append(r)
     elif rideFilter == 'public':
+        logging.info("Filtering rides to show only public rides")
         for r in rides:
             if r.private == False:
                 sortedRide.append(r)
     elif rideFilter == 'pickupThreshold':
+        logging.info(f"Filtering rides within a pickup threshold of {pickupThreshold} miles")
         sortedRide = [ride for ride in rides if distance((User.latitude, User.longitude), (ride.latitude, ride.longitude)).miles <= pickupThreshold]
 
+    logging.info(f"Returning {len(sortedRide)} sorted and filtered rides")
 
     return jsonify([ride.to_json() for ride in sortedRide])
 
 @app.route('/rides/<int:ride_id>', methods=['PUT'])
 def update_ride(ride_id):
     if 'user_id' not in session:
+        logging.warning("Unauthorized access attempt to update ride")
         return jsonify({"message": "Unauthorized"}), 401
 
     current_user_id = session['user_id']
+    logging.info(f"User {current_user_id} is attempting to update ride {ride_id}")
     ride = Ride.query.get_or_404(ride_id)
+    logging.info(f"Ride {ride_id} retrieved from the database")
+
     if ride.creator_id != current_user_id:
+        logging.warning(f"User {current_user_id} does not have permission to update ride {ride_id}")
         return jsonify({"message": "Permission denied"}), 403
     if len(ride.members) > 1:
+        logging.warning(f"Ride {ride_id} cannot be modified because it has other members")
         return jsonify({"message": "Cannot modify ride with other members"}), 403
     data = request.json
+    logging.info(f"Updating ride {ride_id} with data: {data}")
+
     ride.pickup_longitude = data.get('pickupLongitude', ride.pickup_longitude)
     ride.pickup_latitude = data.get('pickupLatitude', ride.pickup_latitude)
     ride.destination_longitude = data.get('destinationLongitude', ride.destination_longitude)
@@ -200,62 +242,86 @@ def update_ride(ride_id):
     ride.description = data.get('description', ride.description)
     # ride.preferred_apps = data.get('preferredApps', ride.preferred_apps)
     db.session.commit()
+    logging.info(f"Ride {ride_id} updated succesfully")
     return jsonify(ride.to_json())
 
 @app.route('/rides/<int:ride_id>/join', methods=['POST'])
 def join_ride(ride_id):
     if 'user_id' not in session:
+        logging.warning("Unauthorized access attempt to join ride")
         return jsonify({"message": "Unauthorized"}), 401
 
     current_user_id = session['user_id']
+    logging.info(f"User {current_user_id} is attempting to join ride {ride_id}")
     ride = Ride.query.get_or_404(ride_id)
+    logging.info(f"Ride {ride_id} retrieved from the database")
     user = User.query.get_or_404(current_user_id)
+    logging.info(f"User {current_user_id} retrieved from the database")
 
     if user in ride.members:
+        logging.warning(f"User {current_user_id} already joined ride {ride_id}")
         return jsonify({"message": "User already joined this ride"}), 400
 
     if len(ride.members) >= ride.max_group_size:
+        logging.warning(f"Ride {ride_id} is full, user {current_user_id} cannot join")
         return jsonify({"message": "Ride is full. Cannot join."}), 400
 
     conflicting_rides = [user_ride for user_ride in user.rides if ride_conflicts(ride, user_ride)]
     if conflicting_rides:
+        logging.warning(f"User {current_user_id} has conflicting upcoming rides and cannot join ride {ride_id}")
         return jsonify({"message": "User has conflicting upcoming ride(s). Cannot join."}), 400
+
+    logging.info(f"User {current_user_id} is joining ride {ride_id}")
 
     ride.members.append(user)
     db.session.commit()
+
+    logging.info(f"User {current_user_id} joined ride {ride_id} succesfully")
     return jsonify({"message": "User joined the ride successfully"}), 200
 
 def ride_conflicts(ride1, ride2):
+    logging.info(f"Checking for conflicts between {ride1.ride_id} and {ride2.ride_id}")
     return ride1.latest_pickup_time > ride2.earliest_pickup_time and ride2.latest_pickup_time > ride1.earliest_pickup_time
 
 @app.route('/rides/<int:ride_id>/leave', methods=['POST'])
 def leave_ride(ride_id):
     if 'user_id' not in session:
+        logging.warning("Unauthorized access attempt to leave ride")
         return jsonify({"message": "Unauthorized"}), 401
 
     current_user_id = session['user_id']
     ride = Ride.query.get_or_404(ride_id)
     user = User.query.get_or_404(current_user_id)
 
+    logging.info(f"User {current_user_id} attempting to leave ride {ride_id}")
+
     if user not in ride.members:
+        logging.warning(f"User {current_user_id} is not a member of ride {ride_id}")
         return jsonify({"message": "User is not a member of this ride"}), 400
 
     if len(ride.members) == 1:
         db.session.delete(ride)
         db.session.commit()
+        logging.info(f"User {current_user_id} left ride {ride_id} and the ride has been deleted")
         return jsonify({"message": "User left the ride successfully and the ride has been deleted"}), 200
 
     ride.members.remove(user)
     db.session.commit()
+    logging.info(f"User {current_user_id} left ride {ride_id} successfully")
     return jsonify({"message": "User left the ride successfully"}), 200
 
 @app.route('/rides/<int:ride_id>/members', methods=['GET'])
 def get_ride_members(ride_id):
     if 'user_id' not in session:
+        logging.warning(f"Unauthorized access attempt to get members of ride {ride_id}")
         return jsonify({"message": "Unauthorized"}), 401
+
+    logging.info(f"User {session['user_id']} attempting to get members of ride {ride_id}")
 
     ride = Ride.query.get_or_404(ride_id)
     members = ride.members
+
+    logging.info(f"User {session['user_id']} successfully retrieved members of ride {ride_id}")
     return jsonify([member.to_json() for member in members]), 200
 
 @app.route('/users/rides', methods=['GET', 'POST'])
@@ -264,14 +330,19 @@ def get_user_rides():
     # PLEASE CHANGE THIS CODE TO WHATEVER THE CORRECT AUTHENTICATION IS.
 
     current_user_id = 1
+    logging.info(f"Request received for user {current_user_id}")
+
     print("request received for user 1")
 
     data = request.json
-    ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'   
+    ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'  
+    logging.info(f"Fetching data for user {current_user_id}") 
 
     user = User.query.get_or_404(current_user_id)
     created_rides = user.created_rides
     member_rides = user.rides
+
+    logging.info(f"User {current_user_id} data retrieved. Filtering rides by type: {ride_type}")
 
     print(user)
 
@@ -288,6 +359,8 @@ def get_user_rides():
     filtered_created_rides = filter_rides(created_rides, ride_type)
     filtered_member_rides = filter_rides(member_rides, ride_type)
 
+    logging.info(f"Rides filtered  for user {current_user_id}: {len(filtered_created_rides)} created, {len(filtered_member_rides)} joined")
+
     return jsonify({
         "created_rides": [ride.to_json() for ride in filtered_created_rides],
         "member_rides": [ride.to_json() for ride in filtered_member_rides]
@@ -296,11 +369,15 @@ def get_user_rides():
 @app.route('/users/upcoming_rides', methods=['GET'])
 def get_user_upcoming_rides():
     if 'user_id' not in session:
+        logging.warning("Unauthorized access attempt to get upcoming rides.")
         return jsonify({"message": "Unauthorized"}), 401
 
     current_user_id = session['user_id']
+    logging.info(f"Fetching upcoming rides for user {current_user_id}")
     user = User.query.get_or_404(current_user_id)
     upcoming_rides = [ride for ride in user.rides if ride.latest_pickup_time > datetime.now()]
+
+    logging.info(f"Upcoming rides filtered for user {current_user_id}")
     return jsonify([ride.to_json() for ride in upcoming_rides]), 200
 
 if __name__ == "__main__":
