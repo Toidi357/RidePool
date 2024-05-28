@@ -13,10 +13,37 @@ from geopy.distance import distance
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+class Unauthorized(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+def check_authentication(request) -> User:
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            auth_token = auth_header.split(" ")[1]
+        except IndexError:
+            raise Unauthorized('Bearer token malformed.')
+    else:
+        auth_token = ''
+    if auth_token: # means user *has* a token
+        # resp should contain an object with the decoded token details
+        # if its a string, that means its an error
+        resp = User.decode_auth_token(auth_token)
+        
+        if not isinstance(resp, str):
+            user = User.query.filter_by(username=resp['sub']).first()
+            return user
+        
+        # special error message if token is expired
+        if resp == 'Signature expired. Please log in again.':
+            raise Unauthorized(resp)
+    
+    raise Unauthorized('Unauthorized')
+
 @app.route('/test', methods = ['GET']) 
 def test():
     return jsonify({'response': 'connection successful'})
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -73,38 +100,19 @@ def login():
 
 @app.route('/profile', methods=['GET'])
 def get_user_profile():
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        try:
-            auth_token = auth_header.split(" ")[1]
-        except IndexError:
-            responseObject = {
-                'message': 'Bearer token malformed.'
-            }
-            return jsonify(responseObject), 401
-    else:
-        auth_token = ''
-    if auth_token: # means user *has* a token
-        # resp should contain an object with the decoded token details
-        # if its a string, that means its an error
-        resp = User.decode_auth_token(auth_token)
-        
-        if not isinstance(resp, str):
-            user = User.query.filter_by(username=resp['sub']).first()
-            responseObject = {
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email,
-                'phone_number': user.phone_number,
-            }
-            return jsonify(responseObject), 200
-        
-        # special error message if token is expired
-        if resp == 'Signature expired. Please log in again.':
-            return jsonify({"message": "Expired"}), 401
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
     
-    return jsonify({'message': "Unauthorized"}), 401
+    responseObject = {
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'phone_number': user.phone_number,
+    }
+    return jsonify(responseObject), 200
 
 @app.route('/logout', methods=['GET'])
 def logout():

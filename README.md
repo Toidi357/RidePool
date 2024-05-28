@@ -44,3 +44,21 @@
  `flask db migrate -m "message"`
 
  `flask db upgrade`
+
+ ## Development Notes
+ We are using token based authentication since we are a SPA
+ On successful /login and /register requests, you will get returned a token like this:
+ "auth_token": "ey......"
+ This token must be saved somewhere throughout in the frontend and used in all subsequent authenticated API calls
+ You must have this request header to be authenticated:
+ "Authorization": "Bearer {token}"
+
+ When developing on the backend, I've created a function called check_authenication that automatically checks if the user is authenticated and if they are, then it returns a User object
+ When developing protected API endpoints, add this code at the beginning:
+ ```
+ try:
+    user = check_authentication(request)
+ except Unauthorized as e:
+    return jsonify({"message": e.args[0]})
+ ```
+ Now the `user` variable has all the information you'll need
