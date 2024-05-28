@@ -123,6 +123,21 @@ def logout():
             
     return jsonify({"message": "Unauthorized"}), 401
 
+# aight we really getting into the weeds with this one
+@app.route('/refresh_token', methods=['GET'])
+def generate_refresh_token():
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
+
+    try:
+        auth_token = user.encode_auth_token(user.username)
+        return jsonify({"auth_token": auth_token}), 200
+    except:
+        return jsonify({"Internal Server Error"}), 500
+
+
 @app.route('/profile', methods=['GET'])
 def get_user_profile():
     try:

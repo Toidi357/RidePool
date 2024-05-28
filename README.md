@@ -49,7 +49,7 @@
  We are using token based authentication since we are a SPA \
  On successful /login and /register requests, you will get returned a token like this: \
  "auth_token": "ey......" \
- This token must be saved somewhere throughout in the frontend and used in all subsequent authenticated API calls \
+ This token must be saved somewhere throughout in the frontend and used in all subsequent authenticated API calls (it also expires in 1 hour) \
  You must have this request header to be authenticated: \
  "Authorization": "Bearer {token}" \
  \
@@ -61,4 +61,6 @@
  except Unauthorized as e:
     return jsonify({"message": e.args[0]})
  ```
- Now the `user` variable has all the information you'll need
+ Now the `user` variable has all the information you'll need \
+ \
+ In the frontend, at the end of every request, there needs to be a check to see if the token is expiring, if it is, call `GET /refresh_token` which will return a new `auth_token`
