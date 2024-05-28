@@ -98,22 +98,6 @@ def login():
         
     return jsonify({"message": "Invalid credentials"}), 401
 
-@app.route('/profile', methods=['GET'])
-def get_user_profile():
-    try:
-        user = check_authentication(request)
-    except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
-    
-    responseObject = {
-        'username': user.username,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'email': user.email,
-        'phone_number': user.phone_number,
-    }
-    return jsonify(responseObject), 200
-
 @app.route('/logout', methods=['GET'])
 def logout():
     auth_header = request.headers.get('Authorization')
@@ -139,19 +123,34 @@ def logout():
             
     return jsonify({"message": "Unauthorized"}), 401
 
-@app.route('/users/profile', methods=['PUT'])
-def update_user_profile():
-    if 'user_id' not in session:
-        return jsonify({"message": "Unauthorized"}), 401
+@app.route('/profile', methods=['GET'])
+def get_user_profile():
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
+    
+    responseObject = {
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'phone_number': user.phone_number,
+    }
+    return jsonify(responseObject), 200
 
-    current_user_id = session['user_id']
-    user = User.query.get_or_404(current_user_id)
+@app.route('/profile', methods=['POST'])
+def update_user_profile():
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
 
     data = request.json
-    user.first_name = data.get('firstName', user.first_name)
-    user.last_name = data.get('lastName', user.last_name)
+    user.first_name = data.get('first_name', user.first_name)
+    user.last_name = data.get('last_name', user.last_name)
     user.email = data.get('email', user.email)
-    user.phone_number = data.get('phoneNumber', user.phone_number)
+    user.phone_number = data.get('phone_number', user.phone_number)
 
     db.session.commit()
 
