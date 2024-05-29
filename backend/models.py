@@ -23,12 +23,12 @@ class Ride(db.Model):
     earliest_pickup_time = Column(DateTime, nullable=False)
     latest_pickup_time = Column(DateTime, nullable=False)
     max_group_size = Column(Integer, nullable=False)
-    private = Column(Boolean, default=False)
     description = Column(String(500))
     preferred_apps = Column(String(200))
 
     creator = relationship('User', back_populates='created_rides')
     members = relationship('User', secondary=user_ride_association, back_populates='rides')
+    requesters = relationship('User', secondary=user_ride_association, back_populates='requested_rides')
 
     def has_not_happened_yet(self):
         return self.latest_pickup_time > datetime.now()
@@ -46,7 +46,6 @@ class Ride(db.Model):
             "earliestPickupTime": self.earliest_pickup_time.isoformat(),
             "latestPickupTime": self.latest_pickup_time.isoformat(),
             "maxGroupSize": self.max_group_size,
-            "private": self.private,
             "description": self.description,
             # "preferredApps": self.preferred_apps,
             "members": [member.user_id for member in self.members]
@@ -66,6 +65,7 @@ class User(db.Model):
 
     created_rides = relationship('Ride', back_populates='creator')
     rides = relationship('Ride', secondary=user_ride_association, back_populates='members')
+    requested_rides = relationship('Ride', secondary=user_ride_association, back_populates='requesters')
 
     def to_json(self):
         return {
