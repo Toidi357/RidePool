@@ -1,6 +1,6 @@
 from flask import request, jsonify, session
 from config import app, db, bcrypt
-from models import User, Ride
+from models import User, Ride, BlacklistToken
 from datetime import datetime
 import logging
 
@@ -12,18 +12,41 @@ from geolocation import get_location
 from geopy.distance import distance
 
 from flask_migrate import Migrate
-import os
-
 migrate = Migrate(app, db)
 
 logging.basicConfig(filename = 'app.log', level = logging.DEBUG, format = '%(asctime)s - %(levelname)s - %(message)s')
 
-app.config['SECRET_KEY'] = os.urandom(24)
+class Unauthorized(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+def check_authentication(request) -> User:
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            auth_token = auth_header.split(" ")[1]
+        except IndexError:
+            raise Unauthorized('Bearer token malformed.')
+    else:
+        auth_token = ''
+    if auth_token: # means user *has* a token
+        # resp should contain an object with the decoded token details
+        # if its a string, that means its an error
+        resp = User.decode_auth_token(auth_token)
+        
+        if not isinstance(resp, str):
+            user = User.query.filter_by(username=resp['sub']).first()
+            return user
+        
+        # special error message if token is expired
+        if resp == 'Signature expired. Please log in again.':
+            raise Unauthorized(resp)
+    
+    raise Unauthorized('Unauthorized')
 
 @app.route('/test', methods = ['GET']) 
 def test():
     return jsonify({'response': 'connection successful'})
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -38,6 +61,11 @@ def register():
         if not data.get(field):
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
+    # check if user already exists
+    user = User.query.filter_by(username=data['username']).first()
+    if user:
+        return jsonify({"error": f"User already exists. Please log in."}), 409
+
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = User(
         username=data['username'],
@@ -50,7 +78,8 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     logging.info(f"User registered succesfully: {new_user.username}")
-    return jsonify({"message": "User registered successfully"}), 201
+    auth_token = new_user.encode_auth_token(new_user.username)
+    return jsonify({"message": "User registered successfully", "auth_token": auth_token}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -64,15 +93,19 @@ def login():
 
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
-        session['user_id'] = user.user_id
-
-        # Capture the location
-
-        location_data = get_location()
-        print(location_data)
-        user.latitude = location_data['location']['lat']
-        user.longitude = location_data['location']['lng']
-        db.session.commit()
+        auth_token = user.encode_auth_token(user.username)
+        if auth_token:
+            responseObject = {
+                'message': 'Successfully logged in.',
+                'auth_token': auth_token,
+            }
+            # Capture the location
+            location_data = get_location()
+            print(location_data)
+            user.latitude = location_data['location']['lat']
+            user.longitude = location_data['location']['lng']
+            
+            return jsonify(responseObject), 200
         
         logging.info(f"User {user.username} logged in succesfully")
         return jsonify({"message": "Login successful"}), 200
@@ -82,26 +115,76 @@ def login():
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    session.pop('user_id', None)
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        auth_token = auth_header.split(" ")[1]
+    else:
+        auth_token = ''
+    if auth_token:
+        resp = User.decode_auth_token(auth_token)
+        if not isinstance(resp, str):
+            # mark the token as blacklisted
+            blacklist_token = BlacklistToken(token=auth_token)
+            try:
+                # insert the token
+                db.session.add(blacklist_token)
+                db.session.commit()
+                responseObject = {
+                    'message': 'Logout successful'
+                }
+                return jsonify(responseObject), 200
+            except Exception as e:
+                return jsonify({'message': 'Error'}), 500
+            
     logging.info("User logged out succesfully")
-    return jsonify({"message": "Logout successful"}), 200
+    return jsonify({"message": "Unauthorized"}), 401
 
-@app.route('/users/profile', methods=['PUT'])
+# aight we really getting into the weeds with this one
+@app.route('/refresh_token', methods=['GET'])
+def generate_refresh_token():
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
+
+    try:
+        auth_token = user.encode_auth_token(user.username)
+        return jsonify({"auth_token": auth_token}), 200
+    except:
+        return jsonify({"Internal Server Error"}), 500
+
+
+@app.route('/profile', methods=['GET'])
+def get_user_profile():
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
+    
+    responseObject = {
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'phone_number': user.phone_number,
+    }
+    return jsonify(responseObject), 200
+
+@app.route('/profile', methods=['POST'])
 def update_user_profile():
-    if 'user_id' not in session:
-        return jsonify({"message": "Unauthorized"}), 401
-
-    current_user_id = session['user_id']
-    user = User.query.get_or_404(current_user_id)
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
 
     data = request.json
 
     logging.info(f"User {current_user_id} is updating their profile")
     logging.info(f"Updated profile data received: {data}")
-    user.first_name = data.get('firstName', user.first_name)
-    user.last_name = data.get('lastName', user.last_name)
+    user.first_name = data.get('first_name', user.first_name)
+    user.last_name = data.get('last_name', user.last_name)
     user.email = data.get('email', user.email)
-    user.phone_number = data.get('phoneNumber', user.phone_number)
+    user.phone_number = data.get('phone_number', user.phone_number)
 
     db.session.commit()
 
