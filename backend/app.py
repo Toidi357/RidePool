@@ -387,29 +387,28 @@ def accept_requester(ride_id, requester_id): # requester_id is user_id of reques
 
 @app.route('/rides/<int:ride_id>/leave', methods=['POST'])
 def leave_ride(ride_id):
-    if 'user_id' not in session:
-        logging.warning("Unauthorized access attempt to leave ride")
-        return jsonify({"message": "Unauthorized"}), 401
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]})
 
-    current_user_id = session['user_id']
     ride = Ride.query.get_or_404(ride_id)
-    user = User.query.get_or_404(current_user_id)
 
-    logging.info(f"User {current_user_id} attempting to leave ride {ride_id}")
+    logging.info(f"User {user.username} attempting to leave ride {ride_id}")
 
     if user not in ride.members:
-        logging.warning(f"User {current_user_id} is not a member of ride {ride_id}")
+        logging.warning(f"User {user.username} is not a member of ride {ride_id}")
         return jsonify({"message": "User is not a member of this ride"}), 400
 
     if len(ride.members) == 1:
         db.session.delete(ride)
         db.session.commit()
-        logging.info(f"User {current_user_id} left ride {ride_id} and the ride has been deleted")
+        logging.info(f"User {user.username} left ride {ride_id} and the ride has been deleted")
         return jsonify({"message": "User left the ride successfully and the ride has been deleted"}), 200
 
     ride.members.remove(user)
     db.session.commit()
-    logging.info(f"User {current_user_id} left ride {ride_id} successfully")
+    logging.info(f"User {user.username} left ride {ride_id} successfully")
     return jsonify({"message": "User left the ride successfully"}), 200
 
 @app.route('/rides/<int:ride_id>/cancel_request', methods=['POST'])
