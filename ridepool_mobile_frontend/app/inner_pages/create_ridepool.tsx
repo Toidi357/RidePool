@@ -56,6 +56,7 @@ const RidepoolForm = () => {
     }
 
     try {
+      console.log(`requesting http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`)
       const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`, form, {
         headers: {
           'Content-Type': 'application/json',

@@ -4,7 +4,12 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 import os
 
+# from flask_lt import run_with_lt
+
+
 app = Flask(__name__)
+
+# run_with_lt(app, "ridepool-35l")
 CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydatabase.db" # where to store:///nameofdb.db

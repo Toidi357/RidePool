@@ -66,6 +66,7 @@ export default function Login({ changeLogin }) {
   useEffect(() => {
     const testConnect = async () => {
       try {
+        console.log(`network check: http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/test`)
         const response = await axios.get(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/test`);
         
         console.log(response.data); // {"response": "connection successful"}

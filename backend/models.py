@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship
 from config import db
-import datetime
+from datetime import datetime, timedelta, timezone
 from flask import current_app as app
 import jwt
     
@@ -31,7 +31,7 @@ class Ride(db.Model):
     members = relationship('User', secondary=user_ride_association, back_populates='rides')
 
     def has_not_happened_yet(self):
-        return self.latest_pickup_time > datetime.datetime.now()
+        return self.latest_pickup_time > datetime.now()
 
     def to_json(self):
         return {
@@ -87,8 +87,8 @@ class User(db.Model):
         """
         try:
             payload = {
-                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=0, hours=1),
-                'iat': datetime.datetime.now(datetime.UTC),
+                'exp': datetime.now(timezone.utc) + timedelta(days=0, hours=1),
+                'iat': datetime.now(timezone.utc),
                 'sub': username
             }
             return jwt.encode(
@@ -130,7 +130,7 @@ class BlacklistToken(db.Model):
 
     def __init__(self, token):
         self.token = token
-        self.blacklisted_on = datetime.datetime.now()
+        self.blacklisted_on = datetime.now()
 
     def __repr__(self):
         return '<id: token: {}'.format(self.token)

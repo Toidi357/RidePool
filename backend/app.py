@@ -14,6 +14,7 @@ from geopy.distance import distance
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+
 logging.basicConfig(filename = 'app.log', level = logging.DEBUG, format = '%(asctime)s - %(levelname)s - %(message)s')
 
 class Unauthorized(Exception):
@@ -94,6 +95,7 @@ def login():
     user = User.query.filter_by(username=data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
         auth_token = user.encode_auth_token(user.username)
+        
         if auth_token:
             responseObject = {
                 'message': 'Successfully logged in.',
@@ -103,8 +105,11 @@ def login():
             location_data = get_location()
             print(location_data)
             user.latitude = location_data['location']['lat']
-            user.longitude = location_data['location']['lng']
             
+            user.longitude = location_data['location']['lng']
+            print("RESPONSE OBJ")
+            print(responseObject)
+
             return jsonify(responseObject), 200
         
         logging.info(f"User {user.username} logged in succesfully")

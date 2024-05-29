@@ -22,6 +22,8 @@ export default function App({ username }) {
 
   const getUserRides = async (time, setWhat) => {
     try {
+
+      console.log(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/users/rides`) 
       const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/users/rides`, {
         'time' : time
       }, {
