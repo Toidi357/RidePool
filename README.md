@@ -1,10 +1,9 @@
 # RidePool
  RidePool 35L Final Project
 
- ## First-Time Run:
- 
+ # First-Time Run:
 
- ### Frontend
+ ## Frontend
  
  - get ipv4 address (ipconfig or ifconfig commands)
  
@@ -28,13 +27,19 @@
 
  - running `npx expo --tunnel` and entering the "exp:" link (might look like exp://njzgnlw-anonymous-8081.exp.direct), but this probably means the backend won't function
 
- #### Other solutions if frontend doesn't load
+ ##### Other solutions if Expo doesn't load (Expo can be finicky, it's not our fault.)
 
- - Expo can be finicky, it's not our fault. When you scan the QR code, half the time the expo app doesn't get the request.
+ - When you scan the QR code, half the time the expo app doesn't get the request and just times out.
 
- - This is often because of subnet configurations. It may help to move both devices to a personal/Home network. UCLA Wifi and eduroam have historically been pretty bad.
+ - this is often because of networking issues (subnet configurations).
 
- - if you don't have access to a personal network, then:
+ - To confirm it is indeed a networking problem, get the IP address of your phone, then do `ping < IP >` from your PC. If it can't reach, then this is indeed a networking problem. Hah.
+
+ ###### Networking fixes.
+ 
+ 1) It may help to move both devices to a personal/Home network. UCLA Wifi and eduroam have historically been pretty bad.
+
+ 2) if you don't have access to a personal network, then:
 
    1) Go to ZeroTier's official website 
 
@@ -52,18 +57,20 @@
 
    8) Copy the IPv4 address from that network interface, NOT your PC's normal IP Address.
 
-   9) while `npx expo start`is running, manually enter in Expo Go the link: `exp://< zerotier ip address >:< port from #6 >`
+   9) while `npx expo start` is running, manually enter in Expo Go the link: `exp://< zerotier ip address >:< port from #6 >`
 
-   10) Pray.
+   10) Make sure to restart the backend too. In the `ridepool_mobile_frontend/config.js` file, put the ZeroTier IP Address in the SERVER_IPV4_ADDRESS variable
+
+   11) Pray.
  
- ### Backend:
+ ## Backend:
  
  `cd backend`
  
  `python app.py`
 
 
- ## For Developers
+ # For Developers
 
  Do all the above steps, but also instll SQLite browser and set it to point to backend/instance/myinstance.db to view the database while the app is running. 
 
@@ -73,7 +80,7 @@
 
  `flask db upgrade`
 
- ## Development Notes
+ ## Token-based Authentication
  We are using token based authentication since we are a SPA \
  On successful /login and /register requests, you will get returned a token like this: \
  "auth_token": "ey......" \
