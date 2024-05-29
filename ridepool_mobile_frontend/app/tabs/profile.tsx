@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@env';
+import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js' // from '@env';
 
 export default function App({ username }) {
   const [error, setError] = useState(null);

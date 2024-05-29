@@ -34,7 +34,7 @@ function TabLayout() {
 
   return (
     <>
-      {isLoggedIn ? (
+      {!isLoggedIn ? (
         <Login changeLogin={setIsLoggedIn}/>
       ) : (
         <Tab.Navigator
@@ -49,7 +49,7 @@ function TabLayout() {
               } else if (route.name === 'tabs/profile') {
                 iconName = focused ? 'person' : 'person-outline';
               } else if (route.name === 'tabs/gemini_help') {
-                iconName = focused ? 'person' : 'person-outline'; // find a better icon
+                iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
               }
 
               return <TabBarIcon name={iconName} color={color} />;

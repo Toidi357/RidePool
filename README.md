@@ -8,7 +8,7 @@
  
  - get ipv4 address (ipconfig or ifconfig commands)
  
- - replace SERVER_IPV4_ADDRESS variable in ridepool_mobile_frontend/.env
+ - replace SERVER_IPV4_ADDRESS variable in `ridepool_mobile_frontend/config.js`
 
  - install expo go on your mobile device
 
@@ -26,7 +26,35 @@
 
  - entering the "exp:" link manually (might look like exp://172.23.53.2:8081)
 
- - running `npx expo --tunnel` and entering the "exp:" link (might look like exp://njzgnlw-anonymous-8081.exp.direct)
+ - running `npx expo --tunnel` and entering the "exp:" link (might look like exp://njzgnlw-anonymous-8081.exp.direct), but this probably means the backend won't function
+
+ #### Other solutions if frontend doesn't load
+
+ - Expo can be finicky, it's not our fault. When you scan the QR code, half the time the expo app doesn't get the request.
+
+ - This is often because of subnet configurations. It may help to move both devices to a personal/Home network. UCLA Wifi and eduroam have historically been pretty bad.
+
+ - if you don't have access to a personal network, then:
+
+   1) Go to ZeroTier's official website 
+
+   2) Make a new ZeroTier network, and set it to public.
+
+   3) Download ZeroTier apps on both your phone and PC.
+
+   4) Get the 16-digit ZeroTier network ID and join this network from both your PC and phone. Now your PC and phone should be on the same subnet.
+
+   5) Try running `npx expo start` again. Try the QR code again with your phone.
+   
+   6) If the QR code still doesn't work (UGH), take note of the PORT that your app is running on. Most likely 8081.
+
+   7) Run `ipconfig` and find the network interface labeled something like `Ethernet adapter ZeroTier One [e5cd7a9e1cf02620]` 
+
+   8) Copy the IPv4 address from that network interface, NOT your PC's normal IP Address.
+
+   9) while `npx expo start`is running, manually enter in Expo Go the link: `exp://< zerotier ip address >:< port from #6 >`
+
+   10) Pray.
  
  ### Backend:
  

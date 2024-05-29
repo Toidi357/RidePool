@@ -8,6 +8,8 @@ const reverseGeocode = async (latitude, longitude) => {
     const response = await axios.get(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`
     );
+    console.log("OSM DATA FOR REVERSE GEOCODE")
+    console.log(response.data)
     return response.data.display_name.split(',')[0]; // Get the first part of the display name
   } catch (error) {
     console.error('Error reverse geocoding:', error);
