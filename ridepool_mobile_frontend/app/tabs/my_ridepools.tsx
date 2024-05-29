@@ -29,6 +29,7 @@ export default function App({ username }) {
       }, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTY5NzIzNjgsImlhdCI6MTcxNjk2ODc2OCwic3ViIjoiQSJ9.yYa1NJ5_u4K8E5MNR0pnOJBCNUR4qFBONMCghhCK0kg`
         }
       }
       

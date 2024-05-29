@@ -478,7 +478,8 @@ def get_user_rides():
     ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'  
     logging.info(f"Fetching data for user {user.username}") 
 
-    user = User.query.get_or_404(user.username)
+    # THIS LINE IS UNECESSARY (AND BUGGY) AS WE ALREADY GET THE USER USING THE AUTHENTICATION TOKEN.
+    # user = User.query.get_or_404(user.username) 
     created_rides = user.created_rides
     member_rides = user.rides
     requested_rides = user.requested_rides

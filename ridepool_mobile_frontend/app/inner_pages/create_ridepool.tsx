@@ -60,6 +60,7 @@ const RidepoolForm = () => {
       const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`, form, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTY5NzI2NjAsImlhdCI6MTcxNjk2OTA2MCwic3ViIjoiQSJ9.18PQp1JmXUfroF0tt506oI5O87c1HZyh1u3VWNnxOZg'
         }
       });
       console.log(response)
