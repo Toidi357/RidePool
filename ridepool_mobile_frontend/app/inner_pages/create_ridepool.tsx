@@ -18,7 +18,7 @@ const RidepoolForm = () => {
   const [latestPickupTime, setLatestPickupTime] = useState(new Date());
   const [isEarliestPickerVisible, setEarliestPickerVisible] = useState(false);
   const [isLatestPickerVisible, setLatestPickerVisible] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
+  // const [isPrivate, setIsPrivate] = useState(false);
 
   const showEarliestPicker = () => setEarliestPickerVisible(true);
   const hideEarliestPicker = () => setEarliestPickerVisible(false);
@@ -50,7 +50,7 @@ const RidepoolForm = () => {
       'earliestPickupTime': earliestPickupTime,
       'latestPickupTime': latestPickupTime,
       'maxGroupSize': maxGroupSize,
-      'private': isPrivate,
+      // 'private': isPrivate,
       'description': description,
       // 'preferredApps':
     }
@@ -145,10 +145,10 @@ const RidepoolForm = () => {
         style={{ marginBottom: 10 }}
       />
 
-      <View style={styles.switchContainer}>
+      {/* <View style={styles.switchContainer}>
         <Text style={styles.label}>Private:</Text>
         <Switch label = "heck" value={isPrivate} onValueChange={value => setIsPrivate(value)} />
-      </View>
+      </View> */}
       
       <Button mode="contained" onPress={() => handleSubmission()}>
         Create Ridepool

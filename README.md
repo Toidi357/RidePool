@@ -27,7 +27,7 @@
 
  - running `npx expo --tunnel` and entering the "exp:" link (might look like exp://njzgnlw-anonymous-8081.exp.direct), but this probably means the backend won't function
 
- ##### Other solutions if Expo doesn't load (Expo can be finicky, it's not our fault.)
+ #### Other solutions if Expo doesn't load (Expo can be finicky, it's not our fault.)
 
  - When you scan the QR code, half the time the expo app doesn't get the request and just times out.
 
@@ -35,11 +35,11 @@
 
  - To confirm it is indeed a networking problem, get the IP address of your phone, then do `ping < IP >` from your PC. If it can't reach, then this is indeed a networking problem. Hah.
 
- ###### Networking fixes.
+ ##### Networking fixes.
  
- 1) It may help to move both devices to a personal/Home network. UCLA Wifi and eduroam have historically been pretty bad.
+ - It may help to move both devices to a personal/Home network. UCLA Wifi and eduroam have historically been pretty bad.
 
- 2) if you don't have access to a personal network, then:
+ - if you don't have access to a personal network, then:
 
    1) Go to ZeroTier's official website 
 
