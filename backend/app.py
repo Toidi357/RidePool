@@ -325,6 +325,8 @@ def join_ride(ride_id):
     user = User.query.get_or_404(user.username)
     logging.info(f"User {user.username} retrieved from the database")
 
+    logging.info(f"User {user.username} is requesting to join ride {ride_id}")
+
     if user in ride.members:
         logging.warning(f"User {user.username} already joined ride {ride_id}")
         return jsonify({"message": "User already joined this ride"}), 400
@@ -338,12 +340,10 @@ def join_ride(ride_id):
         logging.warning(f"User {user.username} has conflicting upcoming rides and cannot join ride {ride_id}")
         return jsonify({"message": "User has conflicting upcoming ride(s). Cannot join."}), 400
 
-    logging.info(f"User {user.username} is joining ride {ride_id}")
-
     ride.requesters.append(user)
     db.session.commit()
 
-    logging.info(f"User {user.username} joined ride {ride_id} succesfully")
+    logging.info(f"User {user.username} requested to join ride {ride_id} succesfully")
     return jsonify({"message": "User joined the ride successfully"}), 200
 
 def ride_conflicts(ride1, ride2):
