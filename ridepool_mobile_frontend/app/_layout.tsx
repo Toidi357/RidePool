@@ -10,6 +10,7 @@ import Login from '@/app/login';
 import OverviewScreen from '@/app/tabs/overview';
 import MyRidepoolsScreen from '@/app/tabs/my_ridepools';
 import ProfileScreen from '@/app/tabs/profile';
+import Gemini from '@/app/tabs/gemini_help';
 
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
 
@@ -33,7 +34,7 @@ function TabLayout() {
 
   return (
     <>
-      {!isLoggedIn ? (
+      {isLoggedIn ? (
         <Login changeLogin={setIsLoggedIn}/>
       ) : (
         <Tab.Navigator
@@ -47,6 +48,8 @@ function TabLayout() {
                 iconName = focused ? 'car' : 'car-outline';
               } else if (route.name === 'tabs/profile') {
                 iconName = focused ? 'person' : 'person-outline';
+              } else if (route.name === 'tabs/gemini_help') {
+                iconName = focused ? 'person' : 'person-outline'; // find a better icon
               }
 
               return <TabBarIcon name={iconName} color={color} />;
@@ -69,6 +72,11 @@ function TabLayout() {
             name="tabs/profile"
             component={ProfileScreen}
             options={{ title: 'Profile' }}
+          />
+          <Tab.Screen
+            name="tabs/gemini_help"
+            component={Gemini}
+            options={{ title: 'Help by Gemini' }}
           />
         </Tab.Navigator>
       )}
