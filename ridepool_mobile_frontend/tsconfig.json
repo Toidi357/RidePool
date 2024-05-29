@@ -14,5 +14,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "app/_layout.jsx", "app/login.jsx", "app/inner_pages/create_ridepool.jsx", "app/tabs/gemini_help.jsx", "app/tabs/my_ridepools.jsx", "app/tabs/overview.jsx", "app/tabs/profile.jsx"  ]
 }

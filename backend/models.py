@@ -131,9 +131,6 @@ class BlacklistToken(db.Model):
     def __init__(self, token):
         self.token = token
         self.blacklisted_on = datetime.now()
-
-    def __repr__(self):
-        return '<id: token: {}'.format(self.token)
     
     @staticmethod
     def check_blacklist(auth_token):

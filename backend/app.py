@@ -1,4 +1,4 @@
-from flask import request, jsonify, session
+from flask import request, jsonify
 from config import app, db, bcrypt
 from models import User, Ride, BlacklistToken
 from datetime import datetime
