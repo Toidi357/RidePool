@@ -33,6 +33,7 @@ def check_authentication(request) -> User:
     if auth_token: # means user *has* a token
         # resp should contain an object with the decoded token details
         # if its a string, that means its an error
+        print("attempting to decode token "+ auth_token)
         resp = User.decode_auth_token(auth_token)
         
         if not isinstance(resp, str):
@@ -82,6 +83,8 @@ def register():
 
 @app.route('/login', methods=['POST'])
 def login():
+    print("login attempt")
+
     data = request.json
 
     logging.info(f"Received login request data: {data}")
@@ -113,6 +116,7 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     
     logging.warning("Invalid login credentials")
+    print("invalid login credentials")
     return jsonify({"message": "Invalid credentials"}), 401
 
 @app.route('/logout', methods=['GET'])
@@ -469,6 +473,9 @@ def get_ride_requesters(ride_id):
 
 @app.route('/users/rides', methods=['GET', 'POST'])
 def get_user_rides():
+    print("get user rides request received. ")
+    print(request.headers)
+    print(check_authentication(request))
     try:
         user = check_authentication(request)
     except Unauthorized as e:
