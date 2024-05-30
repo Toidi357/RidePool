@@ -246,7 +246,7 @@ def create_ride():
     return jsonify(new_ride.to_json()), 201
 
 @app.route('/rides', methods=['GET'])
-def get_rides(rideFilter, pickupThreshold):
+def get_rides():
     rideFilter = request.args.get('rideFilter')
     pickupThreshold = request.args.get('pickupThreshold')
 
