@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
 import * as SecureStore from 'expo-secure-store';
 
-import { saveToken, fetchToken } from '../components/token';
+import { saveToken, fetchToken } from '../components/token_funcs';
 
 export default function App() {
 
