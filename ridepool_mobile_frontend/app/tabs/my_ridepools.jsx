@@ -5,8 +5,20 @@ import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'; // from '@env';
 import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
+import * as SecureStore from 'expo-secure-store';
 
-export default function App({ username }) {
+import { saveToken, fetchToken } from '../components/token';
+
+export default function App() {
+
+  const handleSaveToken = async (token) => {
+    await saveToken(newToken);
+  };
+
+  const handleFetchToken = async () => {
+    return await fetchToken();
+  };
+
   const [error, setError] = useState(null);
   const [currentRides, setCurrentRides] = useState(null)
   const [historyRides, setHistoryRides] = useState(null)
@@ -14,6 +26,7 @@ export default function App({ username }) {
   const navigation = useNavigation();
 
   useEffect(() => {
+    
     getUserRides('current', setCurrentRides);
     getUserRides('history', setHistoryRides);
 
@@ -21,15 +34,17 @@ export default function App({ username }) {
 
 
   const getUserRides = async (time, setWhat) => {
-    try {
+    let token = await handleFetchToken();
 
+    try {
+      console.log("sending request with token " + token)
       console.log(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/users/rides`) 
       const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/users/rides`, {
         'time' : time
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTY5NzIzNjgsImlhdCI6MTcxNjk2ODc2OCwic3ViIjoiQSJ9.yYa1NJ5_u4K8E5MNR0pnOJBCNUR4qFBONMCghhCK0kg`
+          'Authorization': `Bearer ${token}`
         }
       }
       
@@ -48,7 +63,7 @@ export default function App({ username }) {
 
 
     } catch (err) {
-      console.error('Error fetching data:', err);
+      console.error('Error fetching data IN MY RIDEPOOLS:', err);
       setError(err);
     }
   };

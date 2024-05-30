@@ -81,6 +81,8 @@
  `flask db upgrade`
 
  ## Token-based Authentication
+
+ ### How it works
  We are using token based authentication since we are a SPA \
  On successful /login and /register requests, you will get returned a token like this: \
  "auth_token": "ey......" \
@@ -88,6 +90,8 @@
  You must have this request header to be authenticated: \
  "Authorization": "Bearer {token}" \
  \
+
+ ### Backend
  When developing on the backend, I've created a function called check_authenication that automatically checks if the user is authenticated and if they are, then it returns a User object \
  When developing protected API endpoints, add this code at the beginning:
  ```
@@ -98,4 +102,31 @@
  ```
  Now the `user` variable has all the information you'll need \
  \
+
+ ### Frontend
+ 
+ To use the token in your components, do this:
+
+ ```javascript
+ 
+ import { saveToken, fetchToken } from '../components/token';
+
+ export default function App() {
+
+  const handleSaveToken = async (token) => {
+    await saveToken(newToken);
+  };
+
+  const handleFetchToken = async () => {
+    return await fetchToken();
+  };
+
+
+  const getUserRides = async (time, setWhat) => {
+    let token = await handleFetchToken();
+
+    // make backend requests here...
+
+   ```
+
  In the frontend, at the end of every request, there needs to be a check to see if the token is expiring, if it is, call `GET /refresh_token` which will return a new `auth_token`

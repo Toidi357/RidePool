@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -14,7 +14,7 @@ import Gemini from '@/app/tabs/gemini_help';
 
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
 
-import useToken from './components/useToken';
+import { saveToken, fetchToken } from './components/token_funcs';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -31,14 +31,26 @@ function MyRidepoolsStack() {
 
 function TabLayout() {
   const colorScheme = useColorScheme();
-  const tokenProps = useToken();
-  const token = tokenProps.token;
-  const setToken = tokenProps.setToken;
+  const [token, setToken] = useState(null);
 
-  if (!token) {
+  const handleSaveToken = async (token) => {
+    await saveToken(token);
+  };
+
+  const handleFetchToken = async () => {
+    const storedToken = await fetchToken();
+    setToken(storedToken);
+  };
+
+
+  if (!token) { // auto-login, and to login once we already have a token
+    console.log("Not yet logged in! token is " + token)
     return <Login setToken={setToken} />
   }
+  else {
+  console.log("cool, logged in. token is " +token )
 
+  handleSaveToken(token)
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -84,7 +96,18 @@ function TabLayout() {
     </Tab.Navigator>
   )
 }
+}
 
 export default function App() {
+  // useEffect(() => {
+  //   const clearTokenOnStartup = async () => {
+  //     // Clear the token on app startup
+  //     await SecureStore.deleteItemAsync('token');
+  //   };
+
+  //   clearTokenOnStartup();
+  // }, []);
+
+  
   return <TabLayout />;
 }
