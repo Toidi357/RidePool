@@ -14,6 +14,7 @@ import Gemini from '@/app/tabs/gemini_help';
 
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
 
+import useToken from './components/useToken';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -30,8 +31,9 @@ function MyRidepoolsStack() {
 
 function TabLayout() {
   const colorScheme = useColorScheme();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState();
+  const tokenProps = useToken();
+  const token = tokenProps.token;
+  const setToken = tokenProps.setToken;
 
   if (!token) {
     return <Login setToken={setToken} />

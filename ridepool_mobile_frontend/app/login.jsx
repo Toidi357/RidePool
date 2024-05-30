@@ -3,8 +3,6 @@ import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-nat
 import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js' // '@env';
 
-import { StackRouter } from '@react-navigation/native';
-
 export default function Login({ setToken }) {
   const [error, setError] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
@@ -32,7 +30,7 @@ export default function Login({ setToken }) {
           'Content-Type': 'application/json',
         }
       });
-      console.log(response.data.auth_token);
+
       setToken(response.data.auth_token);
     } catch (error) {
       console.error('Error during login:', error);
@@ -54,7 +52,7 @@ export default function Login({ setToken }) {
           'Content-Type': 'application/json',
         }
       });
-      console.log(response.data);
+
       setToken(response.data.auth_token);
     } catch (error) {
       console.error('Error during registration:', error);
