@@ -48,3 +48,8 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## How to work the auth
+Step 1: import the useToken() hook with `import useToken from './components/useToken';` \
+Step 2: Create a variable `const token = useToken().token` \
+Step 3: Now this `token` variable holds the auth token
