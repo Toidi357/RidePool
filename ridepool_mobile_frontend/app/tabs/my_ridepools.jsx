@@ -47,9 +47,8 @@ export default function App() {
           'Authorization': `Bearer ${token}`
         }
       }
-      
     );
-      
+      console.log("USER RIDES: ")
       console.log(response.data)
 
       response.data['created_rides'].forEach(ride => {
@@ -58,8 +57,11 @@ export default function App() {
       response.data['member_rides'].forEach(ride => {
         ride.relationship = 'member';
       });
-      
-      setWhat(response.data['created_rides'].concat(response.data['member_rides']))
+      response.data['requested_rides'].forEach(ride => {
+        ride.relationship = 'requester';
+      });
+      let _ = response.data['created_rides'].concat(response.data['member_rides'])
+      setWhat(_.concat(response.data['requested_rides']))
 
 
     } catch (err) {
