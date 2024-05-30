@@ -13,6 +13,7 @@ import ProfileScreen from '@/app/tabs/profile';
 import Gemini from '@/app/tabs/gemini_help';
 
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
+import FilterRidepoolScreen from '@/app/inner_pages/filter_ridepool'
 
 import { saveToken, fetchToken } from './components/token_funcs';
 
@@ -24,6 +25,7 @@ function MyRidepoolsStack() {
     <Stack.Navigator>
       <Stack.Screen name="My Ridepools" component={MyRidepoolsScreen} />
       <Stack.Screen name="Create Ridepool" component={CreateRidepoolScreen} />
+      <Stack.Screen name="Filter Ridepool" component={FilterRidepoolScreen} />
     </Stack.Navigator>
 
   )

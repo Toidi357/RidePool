@@ -7,7 +7,18 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationInput from '../components/LocationInput';
 import { useNavigation } from '@react-navigation/native';
 
+import { saveToken, fetchToken } from '../components/token_funcs';
+
+
 const RidepoolForm = () => {
+  const handleSaveToken = async (token) => {
+    await saveToken(newToken);
+  };
+ 
+  const handleFetchToken = async () => {
+    return await fetchToken();
+  };
+
   const [pickupRadius, setPickupRadius] = useState('');
   const [description, setDescription] = useState('');
   const [pickupLocation, setPickupLocation] = useState({});
@@ -56,11 +67,12 @@ const RidepoolForm = () => {
     }
 
     try {
+      let token = await handleFetchToken();
       console.log(`requesting http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`)
       const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`, form, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MTY5NzI2NjAsImlhdCI6MTcxNjk2OTA2MCwic3ViIjoiQSJ9.18PQp1JmXUfroF0tt506oI5O87c1HZyh1u3VWNnxOZg'
+          'Authorization': `Bearer ${token}`
         }
       });
       console.log(response)

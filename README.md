@@ -109,7 +109,7 @@
 
  ```javascript
  
- import { saveToken, fetchToken } from '../components/token';
+ import { saveToken, fetchToken } from '../components/token_funcs';
 
  export default function App() {
 
