@@ -19,7 +19,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MyRidepoolsStack() {
-  return(
+  return (
     <Stack.Navigator>
       <Stack.Screen name="My Ridepools" component={MyRidepoolsScreen} />
       <Stack.Screen name="Create Ridepool" component={CreateRidepoolScreen} />
@@ -31,57 +31,56 @@ function MyRidepoolsStack() {
 function TabLayout() {
   const colorScheme = useColorScheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState();
+
+  if (!token) {
+    return <Login setToken={setToken} />
+  }
 
   return (
-    <>
-      {!isLoggedIn ? (
-        <Login changeLogin={setIsLoggedIn}/>
-      ) : (
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            tabBarIcon: ({ color, focused }) => {
-              let iconName;
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, focused }) => {
+          let iconName;
 
-              if (route.name === 'tabs/overview') {
-                iconName = focused ? 'search' : 'search-outline';
-              } else if (route.name === 'tabs/my_ridepools') {
-                iconName = focused ? 'car' : 'car-outline';
-              } else if (route.name === 'tabs/profile') {
-                iconName = focused ? 'person' : 'person-outline';
-              } else if (route.name === 'tabs/gemini_help') {
-                iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
-              }
+          if (route.name === 'tabs/overview') {
+            iconName = focused ? 'search' : 'search-outline';
+          } else if (route.name === 'tabs/my_ridepools') {
+            iconName = focused ? 'car' : 'car-outline';
+          } else if (route.name === 'tabs/profile') {
+            iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'tabs/gemini_help') {
+            iconName = focused ? 'information-circle-outline' : 'information-circle-outline';
+          }
 
-              return <TabBarIcon name={iconName} color={color} />;
-            },
-            tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-            headerShown: false,
-          })}
-        >
-          <Tab.Screen
-            name="tabs/overview"
-            component={OverviewScreen}
-            options={{ title: 'All Ridepools' }}
-          />
-          <Tab.Screen
-            name="tabs/my_ridepools"
-            component={MyRidepoolsStack}
-            options={{ title: 'My Ridepools' }}
-          />
-          <Tab.Screen
-            name="tabs/profile"
-            component={ProfileScreen}
-            options={{ title: 'Profile' }}
-          />
-          <Tab.Screen
-            name="tabs/gemini_help"
-            component={Gemini}
-            options={{ title: 'Help by Gemini' }}
-          />
-        </Tab.Navigator>
-      )}
-    </>
-  );
+          return <TabBarIcon name={iconName} color={color} />;
+        },
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen
+        name="tabs/overview"
+        component={OverviewScreen}
+        options={{ title: 'All Ridepools' }}
+      />
+      <Tab.Screen
+        name="tabs/my_ridepools"
+        component={MyRidepoolsStack}
+        options={{ title: 'My Ridepools' }}
+      />
+      <Tab.Screen
+        name="tabs/profile"
+        component={ProfileScreen}
+        options={{ title: 'Profile' }}
+      />
+      <Tab.Screen
+        name="tabs/gemini_help"
+        component={Gemini}
+        options={{ title: 'Help by Gemini' }}
+      />
+    </Tab.Navigator>
+  )
 }
 
 export default function App() {

@@ -5,7 +5,12 @@ from datetime import datetime, timedelta, timezone
 from flask import current_app as app
 import jwt
     
-user_ride_association = Table('user_ride_association', db.Model.metadata,
+ride_member_association = Table('ride_member_association', db.Model.metadata,
+    Column('user_id', Integer, ForeignKey('user.user_id'), primary_key=True),
+    Column('ride_id', Integer, ForeignKey('ride.ride_id'), primary_key=True)
+)
+
+ride_requester_association = Table('ride_requester_association', db.Model.metadata,
     Column('user_id', Integer, ForeignKey('user.user_id'), primary_key=True),
     Column('ride_id', Integer, ForeignKey('ride.ride_id'), primary_key=True)
 )
@@ -27,8 +32,8 @@ class Ride(db.Model):
     preferred_apps = Column(String(200))
 
     creator = relationship('User', back_populates='created_rides')
-    members = relationship('User', secondary=user_ride_association, back_populates='rides')
-    requesters = relationship('User', secondary=user_ride_association, back_populates='requested_rides')
+    members = relationship('User', secondary=ride_member_association, back_populates='rides')
+    requesters = relationship('User', secondary=ride_requester_association, back_populates='requested_rides')
 
     def has_not_happened_yet(self):
         return self.latest_pickup_time > datetime.now()
@@ -63,9 +68,9 @@ class User(db.Model):
     latitude = Column(Float, nullable = True)
     longitude = Column(Float, nullable = True)
 
-    created_rides = relationship('Ride', back_populates='creator')
-    rides = relationship('Ride', secondary=user_ride_association, back_populates='members')
-    requested_rides = relationship('Ride', secondary=user_ride_association, back_populates='requesters')
+    created_rides = relationship('Ride', back_populates='creator') # rides as creator
+    rides = relationship('Ride', secondary=ride_member_association, back_populates='members') # rides as member
+    requested_rides = relationship('Ride', secondary=ride_requester_association, back_populates='requesters') # rides that user requested to join
 
     def to_json(self):
         return {

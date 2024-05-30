@@ -1,10 +1,11 @@
 import requests
 
 def get_location():
-    # please replace this code with harsh's geolocation fix.
-    # response = requests.post('https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyB0c2L4gDETEWEgCfTjRXxCtyLYyiFAHTg', json={'considerIp': 'true'})
-    # location_data = response.json()
-    location_data = {"location": {"lat": 0, "lng": 0}}
+    ip_address = requests.get('http://api.ipify.org').text
+    response = requests.get(f"http://ip-api.com/json/{ip_address}").json()
+    latitude = response['lat']
+    longitude = response['lon']
+    location_data = {"location": {"lat": latitude, "lng": longitude}}
     return location_data
 
 

@@ -5,7 +5,7 @@ import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js' // '@env';
 
 import { StackRouter } from '@react-navigation/native';
 
-export default function Login({ changeLogin }) {
+export default function Login({ setToken }) {
   const [error, setError] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
 
@@ -32,9 +32,8 @@ export default function Login({ changeLogin }) {
           'Content-Type': 'application/json',
         }
       });
-  
-      console.log(response.data);
-      changeLogin(true); 
+      console.log(response.data.auth_token);
+      setToken(response.data.auth_token);
     } catch (error) {
       console.error('Error during login:', error);
     }
@@ -55,9 +54,8 @@ export default function Login({ changeLogin }) {
           'Content-Type': 'application/json',
         }
       });
-  
       console.log(response.data);
-      changeLogin(true); 
+      setToken(response.data.auth_token);
     } catch (error) {
       console.error('Error during registration:', error);
     }
