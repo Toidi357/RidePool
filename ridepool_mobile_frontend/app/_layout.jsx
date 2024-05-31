@@ -100,16 +100,6 @@ function TabLayout() {
 }
 }
 
-export default function App() {
-  // useEffect(() => {
-  //   const clearTokenOnStartup = async () => {
-  //     // Clear the token on app startup
-  //     await SecureStore.deleteItemAsync('token');
-  //   };
-
-  //   clearTokenOnStartup();
-  // }, []);
-
-  
+export default function App() { 
   return <TabLayout />;
 }

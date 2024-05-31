@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js' // '@env';
+import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'
 
 export default function Login({ setToken }) {
   const [error, setError] = useState(null);
@@ -24,7 +24,6 @@ export default function Login({ setToken }) {
       password: passwordRef.current,
     };
     try {
-      console.log("button pressed");
       const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/login`, form, {
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +65,6 @@ export default function Login({ setToken }) {
         const response = await axios.get(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/test`);
         
         console.log(response.data); // {"response": "connection successful"}
-        console.log(response.data["response"]); // connection successful
 
       } catch (err) {
         console.error('Error fetching data:', err);

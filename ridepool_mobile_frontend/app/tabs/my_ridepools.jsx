@@ -5,9 +5,9 @@ import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'; // from '@env';
 import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
-import * as SecureStore from 'expo-secure-store';
 
 import { saveToken, fetchToken } from '../components/token_funcs';
+import { sendAuthorizedGetRequest, sentAuthorizedGetRequest } from '../components/sendRequest'
 
 export default function App() {
 
@@ -29,6 +29,11 @@ export default function App() {
     
     getUserRides('current', setCurrentRides);
     getUserRides('history', setHistoryRides);
+
+    // testing here
+    sendAuthorizedGetRequest('/profile').then(response => {
+      console.log(response.data)
+    })
 
   }, []);
 

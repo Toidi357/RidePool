@@ -151,7 +151,7 @@ def generate_refresh_token():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     try:
         auth_token = user.encode_auth_token(user.username)
@@ -164,7 +164,7 @@ def get_user_profile():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
     
     responseObject = {
         'username': user.username,
@@ -180,7 +180,7 @@ def update_user_profile():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     data = request.json
 
@@ -202,7 +202,7 @@ def create_ride():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     data = request.json
 
@@ -259,7 +259,7 @@ def get_rides():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     logging.info(f"User {user.username} is attempting to retreive with filter: {rideFilter} and pickup threshold: {pickupThreshold}")
     rides = Ride.query.filter(
@@ -294,7 +294,7 @@ def update_ride(ride_id):
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     logging.info(f"User {user.username} is attempting to update ride {ride_id}")
     ride = Ride.query.get_or_404(ride_id)
@@ -329,7 +329,7 @@ def join_ride(ride_id):
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     current_user_id = user.user_id
     logging.info(f"User {current_user_id} is attempting to join ride {ride_id}")
@@ -368,7 +368,7 @@ def accept_requester(ride_id, requester_id): # requester_id is user_id of reques
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     current_user_id = user.user_id
     ride = Ride.query.get_or_404(ride_id)
@@ -403,7 +403,7 @@ def leave_ride(ride_id):
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     ride = Ride.query.get_or_404(ride_id)
 
@@ -429,7 +429,7 @@ def cancel_request(ride_id):
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     current_user_id = user.user_id
     ride = Ride.query.get_or_404(ride_id)
@@ -451,7 +451,7 @@ def get_ride_members(ride_id):
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     logging.info(f"User {user.username} attempting to get members of ride {ride_id}")
 
@@ -466,7 +466,7 @@ def get_ride_requesters(ride_id):
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     logging.info(f"User {user.user_id} attempting to get members of ride {ride_id}")
 
@@ -488,7 +488,7 @@ def get_user_rides():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     data = request.json
     ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'  
@@ -531,7 +531,7 @@ def get_user_upcoming_rides():
     try:
         user = check_authentication(request)
     except Unauthorized as e:
-        return jsonify({"message": e.args[0]})
+        return jsonify({"message": e.args[0]}), 401
 
     logging.info(f"Fetching upcoming rides for user {user.username}")
     user = User.query.get_or_404(user.username)
