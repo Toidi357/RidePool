@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
 
 import { saveToken, fetchToken } from '../components/token_funcs';
-import { sendAuthorizedGetRequest, sentAuthorizedGetRequest } from '../components/sendRequest'
+import { sendAuthorizedGetRequest } from '../components/sendRequest'
 
 export default function App() {
 

@@ -7,10 +7,11 @@ const BASEURL = `http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}`
 
 async function getRefreshToken(token) {
     let url = BASEURL + "/refresh_token"
-    headers['Authorization'] = `Bearer ${token}`
-    headers['Content-Type'] = 'application/json';
 
-    const response = await axios.get(url, headers);
+    const response = await axios.get(url, {headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    }});
     return response
 }
 
