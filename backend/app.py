@@ -297,8 +297,6 @@ def get_rides():
                                                                         (ride.destination_latitude, ride.destination_longitude)).miles)
     elif sort_by == 'pickup_time':
         sorted_rides = sorted(filtered_rides, key=lambda ride: ride.earliest_pickup_time)
-    elif sort_by == 'dropoff_time':
-        sorted_rides = sorted(filtered_rides, key=lambda ride: ride.latest_dropoff_time)
     else: # no valid sorting key provided
         sorted_rides = filtered_rides
 
