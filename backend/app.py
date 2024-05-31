@@ -247,47 +247,65 @@ def create_ride():
 
 @app.route('/rides', methods=['GET'])
 def get_rides():
-    rideFilter = request.args.get('rideFilter')
-    pickupThreshold = request.args.get('pickupThreshold')
-
-    if pickupThreshold is None:
-        pickupThreshold = 0
-
-    if rideFilter is None:
-        return jsonify({"error": "Missing query parameters"}), 400
-
     try:
         user = check_authentication(request)
     except Unauthorized as e:
         return jsonify({"message": e.args[0]})
 
-    logging.info(f"User {user.username} is attempting to retreive with filter: {rideFilter} and pickup threshold: {pickupThreshold}")
+    logging.info(f"User {user.username} is attempting to retrieve rides with filters and sort by {sort_by}")
+
+    data = request.json
+    desired_pickup_latitude = data.get('desiredPickupLatitude', User.latitude)
+    desired_pickup_longitude = data.get('desiredPickupLongitude', User.longitude)
+    desired_destination_latitude = data.get('desiredDestinationLatitude')
+    desired_destination_longitude = data.get('desiredDestinationLongitude')
+    min_date = data.get('minDate', datetime.now())
+    max_date = data.get('maxDate', datetime.max)
+    pickup_radius_threshold = data.get('pickupRadiusThreshold', float('inf'))
+    dropoff_radius_threshold = data.get('dropoffRadiusThreshold', float('inf'))
+    sort_by = data.get('sortBy', None)
+
+    if not desired_destination_latitude or not desired_destination_longitude:
+        return jsonify({"error": "Missing desired destination location"}), 400
+    
     rides = Ride.query.filter(
-        (Ride.earliest_pickup_time > datetime.now()) & # obviously, need a better way of checking if a ride is complete or not. maybe a boolean status for completion set asynch after time passes latest_arrival_time
+        (Ride.earliest_pickup_time >= min_date) &
+        (Ride.latest_pickup_time <= max_date) &
         (Ride.creator_id != user.user_id) &
         (func.count(Ride.members) < Ride.max_group_size)
-    ).group_by(Ride.username).all()
+    ).all()
 
     logging.info(f"Retrieved {len(rides)} rides from the database")
 
-    current_time = datetime.now()
-    sortedRide = []
-    if rideFilter == 'location':
-        logging.info("Sorting rides by location")
-        sortedRide = sorted(rides, key=lambda ride: distance((User.latitude, User.longitude),(ride.pickup_latitude, ride.pickup_longitude)).miles)
-    elif rideFilter == 'earliestPickupTime':
-        logging.info("Sorting rides by earliest pickup time")
-        sortedRide = sorted(rides, key=lambda ride: abs((ride.earliest_pickup_time - current_time).total_seconds()))
-    elif rideFilter == 'latestPickupTime':
-        logging.info("Sorting rides by latest pickup time")
-        sortedRide = sorted(rides, key=lambda ride: abs((ride.latest_pickup_time - current_time).total_seconds()))
-    elif rideFilter == 'pickupThreshold':
-        logging.info(f"Filtering rides within a pickup threshold of {pickupThreshold} miles")
-        sortedRide = [ride for ride in rides if distance((User.latitude, User.longitude), (ride.latitude, ride.longitude)).miles <= pickupThreshold]
+    # filter by radii
+    filtered_rides = [
+        ride for ride in rides
+        if distance((desired_pickup_latitude, desired_pickup_longitude),
+                    (ride.pickup_latitude, ride.pickup_longitude)).miles <= pickup_radius_threshold and
+           distance((desired_destination_latitude, desired_destination_longitude),
+                    (ride.destination_latitude, ride.destination_longitude)).miles <= dropoff_radius_threshold
+    ]
 
-    logging.info(f"Returning {len(sortedRide)} sorted and filtered rides")
+    logging.info(f"Filtered down to {len(filtered_rides)} rides based on radius thresholds")
 
-    return jsonify([ride.to_json() for ride in sortedRide])
+    # sort filtered rides by key
+    if sort_by == 'pickup_location':
+        sorted_rides = sorted(filtered_rides, key=lambda ride: distance((desired_pickup_latitude, desired_pickup_longitude),
+                                                                        (ride.pickup_latitude, ride.pickup_longitude)).miles)
+    elif sort_by == 'destination_location':
+        sorted_rides = sorted(filtered_rides, key=lambda ride: distance((desired_destination_latitude, desired_destination_longitude),
+                                                                        (ride.destination_latitude, ride.destination_longitude)).miles)
+    elif sort_by == 'pickup_time':
+        sorted_rides = sorted(filtered_rides, key=lambda ride: ride.earliest_pickup_time)
+    elif sort_by == 'dropoff_time':
+        sorted_rides = sorted(filtered_rides, key=lambda ride: ride.latest_dropoff_time)
+    else: # no valid sorting key provided
+        sorted_rides = filtered_rides
+
+    logging.info(f"Returning {len(sorted_rides)} sorted rides")
+
+    return jsonify([ride.to_json() for ride in sorted_rides])
+
 
 @app.route('/rides/<int:ride_id>', methods=['PUT'])
 def update_ride(ride_id):
