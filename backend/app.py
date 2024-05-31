@@ -246,7 +246,16 @@ def create_ride():
     return jsonify(new_ride.to_json()), 201
 
 @app.route('/rides', methods=['GET'])
-def get_rides(rideFilter, pickupThreshold = 0):
+def get_rides():
+    rideFilter = request.args.get('rideFilter')
+    pickupThreshold = request.args.get('pickupThreshold')
+
+    if pickupThreshold is None:
+        pickupThreshold = 0
+
+    if rideFilter is None:
+        return jsonify({"error": "Missing query parameters"}), 400
+
     try:
         user = check_authentication(request)
     except Unauthorized as e:
