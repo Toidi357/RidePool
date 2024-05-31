@@ -1,3 +1,11 @@
+## Development Notes: Kevin
+I've created a component with these 2 function signatures: \
+`async function sendAuthorizedGetRequest(url, headers = {})` and \
+`async function sendAuthorizedPostRequest(url, body, headers = {})` \
+They are async so make sure to await them properly; these functions by default have the auth header + the content-type header so no need to include those unless u wanna add something else \
+For the `url`, don't send in the hostname part of the URL, aka put in `/users/rides` not `http://{localIP}:{localPort}/users/rides` \
+All token management is done within these helper functions so no need to import config.js or token stuff \
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).

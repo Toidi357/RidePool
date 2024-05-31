@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
 
 import { saveToken, fetchToken } from '../components/token_funcs';
-import { sendAuthorizedGetRequest } from '../components/sendRequest'
+import { sendAuthorizedGetRequest, sendAuthorizedPostRequest } from '../components/sendRequest'
 
 export default function App() {
 
@@ -42,17 +42,9 @@ export default function App() {
     let token = await handleFetchToken();
 
     try {
-      console.log("sending request with token " + token)
-      console.log(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/users/rides`) 
-      const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/users/rides`, {
+      const response = await sendAuthorizedPostRequest(`/users/rides`, {
         'time' : time
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      }
-    );
+      })
       console.log("USER RIDES: ")
       console.log(response.data)
 

@@ -42,7 +42,7 @@ export const sendAuthorizedGetRequest = async (url, headers = {}) => {
     return response
 }
 
-export const sendAuthorizedPostRequest = async (url, headers, body) => {
+export const sendAuthorizedPostRequest = async (url, body, headers={}) => {
     let token = await fetchToken()
 
     // check if token is expired or within 30 minutes so refresh
