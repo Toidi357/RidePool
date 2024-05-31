@@ -9,6 +9,7 @@ from dateutil import parser
 from sqlalchemy import func
 from datetime import datetime
 from geolocation import get_location
+from gemini_helper import choose_best_response
 from geopy.distance import distance
 
 from flask_migrate import Migrate
@@ -539,6 +540,15 @@ def get_user_upcoming_rides():
 
     logging.info(f"Upcoming rides filtered for user {user.username}")
     return jsonify([ride.to_json() for ride in upcoming_rides]), 200
+
+@app.route('/gemini_query', methods = ['POST'])
+def gemini_query():
+    data = request.json()
+    query = data.get('query')
+
+    response = choose_best_response(data)
+    return jsonify({"response": response}), 200
+
 
 if __name__ == "__main__":
     port = 5000
