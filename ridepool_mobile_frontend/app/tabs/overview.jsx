@@ -5,9 +5,10 @@ import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'; // from '@env';
 import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
-import * as SecureStore from 'expo-secure-store';
 
 import { saveToken, fetchToken } from '../components/token_funcs';
+
+import { sendAuthorizedPostRequest } from "../components/sendRequest"
 
 export default function App() {
 
@@ -24,19 +25,13 @@ export default function App() {
 
   const navigation = useNavigation();
 
-  useEffect(() => {
-    
-    // getUserRides('current', setCurrentRides);
-    // getUserRides('history', setHistoryRides);
-
-  }, []);
-
-
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.listContainer}>
-        <Button mode="outlined" onPress={() => navigation.navigate('Filter Ridepools')}>
+        <Button mode="outlined" onPress={() => navigation.navigate('Filter Ridepools', {
+          setCurrentRides: setCurrentRides,
+        })}>
           Filter Ridepools
         </Button>
       </View>   
@@ -45,7 +40,7 @@ export default function App() {
         <Text style={styles.label}>Search Results</Text>
       </View>
 
-      {currentRides != null ? <RideList displayRelationship = {true} rides = {currentRides}/> : (<></>)}
+      {currentRides != null ? <RideList rides = {currentRides}/> : (<></>)}
 
     </ScrollView>
   );

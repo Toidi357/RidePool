@@ -246,45 +246,59 @@ def create_ride():
     logging.info (f"New ride created succesfully: {new_ride.to_json()}")
     return jsonify(new_ride.to_json()), 201
 
-@app.route('/rides', methods=['GET'])
+@app.route('/searchrides', methods=['POST'])
 def get_rides():
-    try:
-        user = check_authentication(request)
-    except Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
+    # TODO: DISABLING UNTIL WE FIX AUTHORIZATION
+    # try:
+    #     user = check_authentication(request)
+    # except Unauthorized as e:
+    #     print("unauthorized twat")
+    #     return jsonify({"message": e.args[0]}), 401
 
-    logging.info(f"User {user.username} is attempting to retrieve rides with filters and sort by {sort_by}")
+    # logging.info(f"User {user.username} is attempting to retrieve rides with filters and sort by {sort_by}")
 
+    
     data = request.json
-    desired_pickup_latitude = data.get('desiredPickupLatitude', User.latitude)
-    desired_pickup_longitude = data.get('desiredPickupLongitude', User.longitude)
-    desired_destination_latitude = data.get('desiredDestinationLatitude')
-    desired_destination_longitude = data.get('desiredDestinationLongitude')
+    desired_pickup_latitude = float(data.get('desiredPickupLatitude'))
+    desired_pickup_longitude = float(data.get('desiredPickupLongitude'))
+    desired_destination_latitude = float(data.get('desiredDestinationLatitude'))
+    desired_destination_longitude = float(data.get('desiredDestinationLongitude'))
     min_date = data.get('minDate', datetime.now())
     max_date = data.get('maxDate', datetime.max)
     pickup_radius_threshold = data.get('pickupRadiusThreshold', float('inf'))
     dropoff_radius_threshold = data.get('dropoffRadiusThreshold', float('inf'))
     sort_by = data.get('sortBy', None)
 
+    
     if not desired_destination_latitude or not desired_destination_longitude:
         return jsonify({"error": "Missing desired destination location"}), 400
+
     
     rides = Ride.query.filter(
         (Ride.earliest_pickup_time >= min_date) &
-        (Ride.latest_pickup_time <= max_date) &
-        (Ride.creator_id != user.user_id) &
-        (func.count(Ride.members) < Ride.max_group_size)
+        (Ride.latest_pickup_time <= max_date) 
+        # &
+        # (Ride.creator_id != user.user_id) &
+        # TODO: AUTHENTICATION ISN'T WORKING, CAN'T DO THIS CHECK
+
+        # (func.count(Ride.members) < Ride.max_group_size) 
+        # TODO: SQLALCHEMY TELLS ME AN ERROR: MISUSE OF COUNT FUNCTION ON THIS LINE. I DISABLED IT.
     ).all()
 
     logging.info(f"Retrieved {len(rides)} rides from the database")
+
+    print(type(desired_pickup_latitude), desired_pickup_latitude)
+    print(type(desired_pickup_longitude), desired_pickup_longitude)
+    print(type(desired_destination_latitude), desired_destination_latitude)
+    print(type(desired_destination_longitude), desired_destination_longitude)
 
     # filter by radii
     filtered_rides = [
         ride for ride in rides
         if distance((desired_pickup_latitude, desired_pickup_longitude),
-                    (ride.pickup_latitude, ride.pickup_longitude)).miles <= pickup_radius_threshold and
+                    (ride.pickup_latitude, ride.pickup_longitude)).miles <= int(pickup_radius_threshold) and
            distance((desired_destination_latitude, desired_destination_longitude),
-                    (ride.destination_latitude, ride.destination_longitude)).miles <= dropoff_radius_threshold
+                    (ride.destination_latitude, ride.destination_longitude)).miles <= int(dropoff_radius_threshold)
     ]
 
     logging.info(f"Filtered down to {len(filtered_rides)} rides based on radius thresholds")
@@ -302,6 +316,7 @@ def get_rides():
         sorted_rides = filtered_rides
 
     logging.info(f"Returning {len(sorted_rides)} sorted rides")
+    print(sorted_rides)
 
     return jsonify([ride.to_json() for ride in sorted_rides])
 
