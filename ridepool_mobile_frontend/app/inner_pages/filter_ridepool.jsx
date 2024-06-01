@@ -7,7 +7,9 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationInput from '../components/LocationInput';
 import { useNavigation } from '@react-navigation/native';
 
+
 import { sendAuthorizedPostRequest } from "../components/sendRequest"
+import { Picker } from '@react-native-picker/picker';
 
 const RidepoolForm = ({ route }) => {
   const { setCurrentRides } = route.params;
@@ -28,6 +30,8 @@ const RidepoolForm = ({ route }) => {
 
   const showMaxPicker = () => setMaxPickerVisible(true);
   const hideMaxPicker = () => setMaxPickerVisible(false);
+
+  
 
   const handleConfirmMin = (date) => {
     setMinDate(date);
@@ -52,7 +56,7 @@ const RidepoolForm = ({ route }) => {
       'dropoffRadiusThreshold': dropoffRadiusThreshold,
       'minDate': minDate,
       'maxDate': maxDate,
-      'sortBy': "pickup_time"
+      'sortBy': sortBy
     }
 
     try {
@@ -118,6 +122,16 @@ const RidepoolForm = ({ route }) => {
         onConfirm={handleConfirmMax}
         onCancel={hideMaxPicker}
       />
+
+    <Picker
+      selectedValue={sortBy}
+      onValueChange={(itemValue, itemIndex) => setSortBy(itemValue)}
+      style={{ marginBottom: 10 }}
+    >
+      <Picker.Item label="Sort By Pickup Time" value="pickup_time" />
+      <Picker.Item label="Sort By Distance to Pickup Location" value="pickup_location" />
+      <Picker.Item label="Sort By Distance to Destination Location" value="destination_location" />
+    </Picker>
       
       <Button mode="contained" onPress={() => handleSubmission()}>
         Submit Search
