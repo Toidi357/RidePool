@@ -248,15 +248,10 @@ def create_ride():
 
 @app.route('/searchrides', methods=['POST'])
 def get_rides():
-    # TODO: DISABLING UNTIL WE FIX AUTHORIZATION
-    # try:
-    #     user = check_authentication(request)
-    # except Unauthorized as e:
-    #     print("unauthorized twat")
-    #     return jsonify({"message": e.args[0]}), 401
-
-    # logging.info(f"User {user.username} is attempting to retrieve rides with filters and sort by {sort_by}")
-
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]}), 401
     
     data = request.json
     desired_pickup_latitude = float(data.get('desiredPickupLatitude'))
