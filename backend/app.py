@@ -570,9 +570,11 @@ def get_user_upcoming_rides():
 @app.route('/gemini_query', methods = ['POST'])
 def gemini_query():
     data = request.json()
+    logging.info(f"User asked gemini: {data}")
     query = data.get('query')
 
     response = choose_best_response(data)
+    logging.info(f"Gemini returned response: {response}")
     return jsonify({"response": response}), 200
 
 
