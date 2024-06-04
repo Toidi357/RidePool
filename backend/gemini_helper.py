@@ -8,7 +8,7 @@ from collections import Counter
 from geolocation import get_location
 
 
-genai.configure(api_key = 'AIzaSyDYF9j18membMdiL1M_8Fc46b333A9RHHw')
+genai.configure(api_key = 'AIzaSyCYNiJhJpxL8Oth-JnVvBAqBhDGNE8lHeI')
 model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 def get_user_count():
@@ -70,17 +70,14 @@ PRESET_RESPONSES = [
     f"The busiest day is {str(get_busiest_day())}"
 ]
 
-def query_gemini_ai(query, preset_responses):
-    prompt = f"{query}, choose between these responses --> {','.join(preset_responses)}. Choose only between these answers nothing else, sorry I do not know should only be picked if none of the other answers pertain"
+def query_gemini_ai(query):
+    prompt = f"{query}, choose between these responses --> {','.join(PRESET_RESPONSES)}. If None of the answers fit just say 'Sorry I do not know'"
     response = model.generate_content(prompt)
     content_parts = response._result.candidates[0].content.parts
     text_content = [part.text for part in content_parts]
     
     return text_content
 
-def choose_best_response(user_query):
-    gemini_response = query_gemini_ai(user_query, PRESET_RESPONSES)
-    return gemini_response
 
 
 
