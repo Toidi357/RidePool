@@ -592,6 +592,8 @@ def rate_members(ride_id):
             "timestamp": datetime.utcnow().isoformat() + 'Z'
         })
 
+        member.avg_rating = sum(rating['rating'] for rating in member.ratings) / len(member.ratings)
+
     db.session.commit()
     return jsonify({"message": "Ratings submitted successfully"}), 200
 
