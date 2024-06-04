@@ -71,8 +71,21 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#ffffff"
   },
+  inputContainer: {
+    marginBottom: 20,
+    marginTop: 70, 
+  },
+  input: {
+    marginBottom: 10,
+  },
+  button: {
+    marginTop: 20,
+  },
   listContainer: {
     marginBottom: 10,
+  },
+  responseCard: {
+    marginTop: 20,
   },
   label: {
     fontWeight: 'bold',

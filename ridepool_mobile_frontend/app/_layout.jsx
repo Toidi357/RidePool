@@ -39,6 +39,14 @@ function OverviewStack() {
   )
 }
 
+function GeminiStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name ="Help by Gemini" component={Gemini} />
+    </Stack.Navigator>
+  )
+}
+
 function TabLayout() {
   const colorScheme = useColorScheme();
   const [token, setToken] = useState(null);
@@ -100,7 +108,7 @@ function TabLayout() {
       />
       <Tab.Screen
         name="tabs/gemini_help"
-        component={Gemini}
+        component={GeminiStack}
         options={{ title: 'Help by Gemini' }}
       />
     </Tab.Navigator>
