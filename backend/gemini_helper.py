@@ -48,7 +48,7 @@ def get_closest_ride():
             min_distance = distance
             closest_ride = ride
 
-    return closest_ride
+    return closest_ride.description
 
 def get_busiest_day():
     rides = Ride.query.all()
