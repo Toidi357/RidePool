@@ -47,6 +47,15 @@ function GeminiStack() {
   )
 }
 
+function ProfileStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+    </Stack.Navigator>
+  )
+}
+
+
 function TabLayout() {
   const colorScheme = useColorScheme();
   const [token, setToken] = useState(null);
@@ -103,7 +112,7 @@ function TabLayout() {
       />
       <Tab.Screen
         name="tabs/profile"
-        component={ProfileScreen}
+        component={ProfileStack}
         options={{ title: 'Profile' }}
       />
       <Tab.Screen
