@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Button, ScrollView, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 
 import { fetchToken } from '../components/token_funcs';
@@ -33,28 +33,31 @@ export default function App(){
   const navigation = useNavigation();
 
 
- useEffect(() => {
-     const fetchUserProfile = async () => {
-         let token = await handleFetchToken();
-         try {
-             const response = await sendAuthorizedGetRequest('/profile');
-             setUsername(response.data.username);
-             setRating(response.data.average_rating);
-             setPhoneNumber(response.data.phone_number);
-             setEmail(response.data.email);
-             setFirstName(response.data.first_name);
-             setLastName(response.data.last_name);
-            
-         } catch (err) {
-             console.error('Error fetching user profile:', err);
-             setError(err.toString());
-         }
-     };
+  const fetchUserProfile = async () => {
+    let token = await fetchToken();
+    try {
+      const response = await sendAuthorizedGetRequest('/profile');
+      setUsername(response.data.username);
+      setRating(response.data.average_rating);
+      setPhoneNumber(response.data.phone_number);
+      setEmail(response.data.email);
+      setFirstName(response.data.first_name);
+      setLastName(response.data.last_name);
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+      setError(err.toString());
+    }
+  };
 
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
 
-     fetchUserProfile();
- }, []);
-
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfile();
+    }, [fetchUserProfile])
+  );
 
  return (
   <ScrollView style={styles.container}>
