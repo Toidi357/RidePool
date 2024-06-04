@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, Float, DateTime
+from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, Float, DateTime, JSON
 from sqlalchemy.orm import relationship
 from config import db
 from datetime import datetime, timedelta, timezone
@@ -67,6 +67,7 @@ class User(db.Model):
     phone_number = Column(String(12), unique=True, nullable=False)
     latitude = Column(Float, nullable = True)
     longitude = Column(Float, nullable = True)
+    ratings = Column(JSON, default=[])  
 
     created_rides = relationship('Ride', back_populates='creator') # rides as creator
     rides = relationship('Ride', secondary=ride_member_association, back_populates='members') # rides as member
@@ -82,8 +83,14 @@ class User(db.Model):
             "phoneNumber": self.phone_number,
             "latitude": self.latitude,
             "longitude": self.longitude,
-            "rides": [ride.to_json() for ride in self.rides]
+            "rides": [ride.to_json() for ride in self.rides],
+            "averageRating": self.get_average_rating()
         }
+    
+    def get_average_rating(self):
+        if not self.ratings:
+            return None
+        return sum(rating['rating'] for rating in self.ratings) / len(self.ratings)
     
     def encode_auth_token(self, username):
         """
