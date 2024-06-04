@@ -173,6 +173,7 @@ def get_user_profile():
         'last_name': user.last_name,
         'email': user.email,
         'phone_number': user.phone_number,
+        'average_rating':user.avg_rating,
     }
     return jsonify(responseObject), 200
 
