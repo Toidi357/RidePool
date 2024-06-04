@@ -51,13 +51,13 @@ export default function App({ username }) {
           style={styles.input}
         />
         <Button mode ="contained" onPress={handleQuerySubmit} styles ={styles.button}>
-          Submit
+          Ask Gemini
         </Button>
       </View>
       {response && (
         <Card style={styles.responseCard}>
           <Card.Content>
-            <Title>Response</Title>
+            <Title>Response: </Title>
             <Paragraph>{response}</Paragraph>
           </Card.Content>
         </Card>
@@ -81,24 +81,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
   },
-  listContainer: {
-    marginBottom: 10,
-  },
   responseCard: {
     marginTop: 20,
-  },
-  label: {
-    fontWeight: 'bold',
-    marginBottom: 5,
-    fontSize: 20
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    justifyContent: 'space-between', 
-  },
-  dateTime: {
-    marginBottom: 10,
   },
 });
