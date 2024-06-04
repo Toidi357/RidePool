@@ -14,6 +14,7 @@ import Gemini from '@/app/tabs/gemini_help';
 
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
 import FilterRidepoolScreen from '@/app/inner_pages/filter_ridepool'
+import EditProfileScreen from '@/app/inner_pages/edit_profile'
 
 import { saveToken, fetchToken } from './components/token_funcs';
 
@@ -51,6 +52,7 @@ function ProfileStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="Edit Profile" component={EditProfileScreen} />
     </Stack.Navigator>
   )
 }

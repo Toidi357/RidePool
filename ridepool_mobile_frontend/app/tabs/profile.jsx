@@ -73,7 +73,7 @@ export default function App(){
         <Text style={styles.infoText}>Email: {email}</Text>
       </Card.Content>
       <Card.Actions>
-        <Button title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
+        <Button title="Edit Profile" onPress={() => navigation.navigate('Edit Profile', {username: {username}})} />
       </Card.Actions>
     </Card>
   </ScrollView>

@@ -177,7 +177,7 @@ def get_user_profile():
     }
     return jsonify(responseObject), 200
 
-@app.route('/profile', methods=['POST'])
+@app.route('/profile/update', methods=['POST'])
 def update_user_profile():
     try:
         user = check_authentication(request)
