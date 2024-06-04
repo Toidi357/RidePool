@@ -521,8 +521,6 @@ def get_user_rides():
     ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'  
     logging.info(f"Fetching data for user {user.username}") 
 
-    # THIS LINE IS UNECESSARY (AND BUGGY) AS WE ALREADY GET THE USER USING THE AUTHENTICATION TOKEN.
-    # user = User.query.get_or_404(user.username) 
     created_rides = user.created_rides
     member_rides = user.rides
     requested_rides = user.requested_rides
@@ -566,6 +564,54 @@ def get_user_upcoming_rides():
 
     logging.info(f"Upcoming rides filtered for user {user.username}")
     return jsonify([ride.to_json() for ride in upcoming_rides]), 200
+
+@app.route('/rides/<int:ride_id>/rate_members', methods=['POST'])
+def rate_members(ride_id):
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]}), 401
+
+    ride = Ride.query.get_or_404(ride_id)
+    data = request.json
+    ratings = data.get('ratings', {})
+
+    if user not in ride.members:
+        return jsonify({"message": "You are not a member of this ride"}), 403
+
+    for member_id, rating in ratings.items():
+        if not (1 <= rating <= 5):
+            return jsonify({"message": "Rating must be between 1 and 5"}), 400
+        member = User.query.get(member_id)
+        if not member or member == user:
+            return jsonify({"message": "Invalid member ID or you cannot rate yourself"}), 400
+        
+        member.ratings.append({
+            "rated_by": user.user_id,
+            "rating": rating,
+            "timestamp": datetime.utcnow().isoformat() + 'Z'
+        })
+
+        member.avg_rating = sum(rating['rating'] for rating in member.ratings) / len(member.ratings)
+
+    db.session.commit()
+    return jsonify({"message": "Ratings submitted successfully"}), 200
+
+@app.route('/rides/<int:ride_id>/members', methods=['GET'])
+def get_ride_members_to_rate(ride_id):
+    try:
+        user = check_authentication(request)
+    except Unauthorized as e:
+        return jsonify({"message": e.args[0]}), 401
+
+    logging.info(f"User {user.username} attempting to get members of ride {ride_id}")
+
+    ride = Ride.query.get_or_404(ride_id)
+    members = ride.members
+
+    logging.info(f"User {user.username} successfully retrieved members of ride {ride_id}")
+    return jsonify([member.to_json() for member in members if member.user_id != user.user_id]), 200
+
 
 @app.route('/gemini_query', methods = ['POST'])
 def gemini_query():
