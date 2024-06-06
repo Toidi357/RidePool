@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'
+import { saveToken, fetchToken } from './components/token_funcs';
 
 export default function Login({ setToken }) {
   const [error, setError] = useState(null);
@@ -18,6 +19,10 @@ export default function Login({ setToken }) {
     ref.current = value;
   };
 
+  const handleSaveToken = async (token) => {
+    await saveToken(token);
+  };
+
   const submitLogin = async () => {
     const form = {
       username: usernameRef.current,
@@ -31,6 +36,7 @@ export default function Login({ setToken }) {
       });
 
       setToken(response.data.auth_token);
+      handleSaveToken(response.data.auth_token);
     } catch (error) {
       console.error('Error during login:', error);
     }

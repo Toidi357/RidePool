@@ -17,6 +17,7 @@ import FilterRidepoolScreen from '@/app/inner_pages/filter_ridepool'
 import EditProfileScreen from '@/app/inner_pages/edit_profile'
 
 import { saveToken, fetchToken } from './components/token_funcs';
+import jwtDecode from 'jwt-decode';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -57,29 +58,18 @@ function ProfileStack() {
   )
 }
 
+function LoginStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name ="Login" component={Login} />
+    </Stack.Navigator>
+  )
+}
+
+
 
 function TabLayout() {
   const colorScheme = useColorScheme();
-  const [token, setToken] = useState(null);
-
-  const handleSaveToken = async (token) => {
-    await saveToken(token);
-  };
-
-  const handleFetchToken = async () => {
-    const storedToken = await fetchToken();
-    setToken(storedToken);
-  };
-
-
-  if (!token) { // auto-login, and to login once we already have a token
-    console.log("Not yet logged in! token is " + token)
-    return <Login setToken={setToken} />
-  }
-  else {
-  console.log("cool, logged in. token is " +token )
-
-  handleSaveToken(token)
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -125,8 +115,31 @@ function TabLayout() {
     </Tab.Navigator>
   )
 }
-}
+
 
 export default function App() { 
-  return <TabLayout />;
+  const [token, setToken] = useState(null);
+
+  const handleSaveToken = async (token) => {
+    await saveToken(token);
+  };
+
+  const handleFetchToken = async () => {
+    const storedToken = await fetchToken();
+    setToken(storedToken);
+  };
+
+  useEffect(() => {
+    const fetchTokenAsync = async () => {
+      const storedToken = await handleFetchToken();
+      setToken(storedToken);
+    };
+    fetchTokenAsync();
+  }, []);
+    if (!token) {
+      console.log("Not yet logged in! token is " + token)
+      return <Login setToken={setToken} />
+  }else{
+    return  <TabLayout />;
+  }
 }
