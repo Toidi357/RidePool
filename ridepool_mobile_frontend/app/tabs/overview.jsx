@@ -40,7 +40,9 @@ export default function App() {
         <Text style={styles.label}>Search Results</Text>
       </View>
 
-      {currentRides != null ? <RideList rides = {currentRides}/> : (<></>)}
+      {currentRides != null ?
+        <RideList displayRelationship={true} rides={currentRides}  /> : (<></>)
+      }
 
     </ScrollView>
   );

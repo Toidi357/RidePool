@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
-import { Card, Text, Title, Paragraph } from 'react-native-paper';
+import { Card, Text, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
+
+import { sendAuthorizedPostRequest } from "../components/sendRequest"
 
 const reverseGeocode = async (latitude, longitude) => {
   try {
@@ -48,6 +50,14 @@ const RideCard = ({ ride, displayRelationship }) => {
         status = "Request Pending";
     }
     }
+    const [currentRides, setCurrentRides] = useState(null)
+    const onLeave = async (rideId) => {
+      try {
+        await sendAuthorizedPostRequest(`/rides/${rideId}/leave`);
+      } catch (err) {
+        console.error('Error leaving ride: ', err);
+      }
+    };
 
   return (
     <Card style={styles.card}>
@@ -57,6 +67,11 @@ const RideCard = ({ ride, displayRelationship }) => {
         <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
         <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
       </Card.Content>
+      {ride.relationship === "member" && (
+        <Card.Actions>
+          <Button mode="contained" onPress={() => onLeave(ride.rideId)}>Leave</Button>
+        </Card.Actions>
+      )}
     </Card>
   );
 };
