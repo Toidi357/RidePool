@@ -17,7 +17,7 @@ import FilterRidepoolScreen from '@/app/inner_pages/filter_ridepool'
 import EditProfileScreen from '@/app/inner_pages/edit_profile'
 
 import { saveToken, fetchToken } from './components/token_funcs';
-import jwtDecode from 'jwt-decode';
+import { AuthProvider, useAuth } from './components/AuthContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -116,9 +116,9 @@ function TabLayout() {
   )
 }
 
-
-export default function App() { 
+function HomePage() {
   const [token, setToken] = useState(null);
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
 
   const handleSaveToken = async (token) => {
     await saveToken(token);
@@ -128,7 +128,7 @@ export default function App() {
     const storedToken = await fetchToken();
     setToken(storedToken);
   };
-
+  console.log(isLoggedIn)
   useEffect(() => {
     const fetchTokenAsync = async () => {
       const storedToken = await handleFetchToken();
@@ -136,10 +136,18 @@ export default function App() {
     };
     fetchTokenAsync();
   }, []);
-    if (!token) {
-      console.log("Not yet logged in! token is " + token)
-      return <Login setToken={setToken} />
+    if (isLoggedIn) {
+      return <TabLayout />
   }else{
-    return  <TabLayout />;
+    console.log("Not yet logged in! token is " + token)
+    return <Login setToken={setToken} />
   }
+}
+
+export default function App() { 
+  return (
+    <AuthProvider>
+      <HomePage />
+    </AuthProvider>
+  )
 }

@@ -7,14 +7,16 @@ import axios from 'axios';
 import { fetchToken, clearToken, setToken} from '../components/token_funcs';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js';
 import { sendAuthorizedGetRequest, sendAuthorizedPostRequest } from '../components/sendRequest'
-import RNRestart from 'react-native-restart';
-
+import { useAuth } from '../components/AuthContext';
 
 
 
 
 export default function App(){
-
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const logOut = () => {
+    setIsLoggedIn(false);
+  }
 
  const handleSaveToken = async (token) => {
    await saveToken(newToken);
@@ -75,7 +77,7 @@ export default function App(){
       await clearToken();  // Clear the token from local storage or state
       //setToken(null);
       //navigation.navigate('Login'); // Navigate to the login screen
-      RNRestart.restart();
+      logOut()
     } catch (err) {
       console.error('Logout failed:', err);
       setError('Failed to log out');

@@ -3,10 +3,12 @@ import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-nat
 import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'
 import { saveToken, fetchToken } from './components/token_funcs';
+import { useAuth } from './components/AuthContext';
 
 export default function Login({ setToken }) {
   const [error, setError] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
 
   const usernameRef = useRef('');
   const passwordRef = useRef('');
@@ -23,6 +25,10 @@ export default function Login({ setToken }) {
     await saveToken(token);
   };
 
+  const handleIsLoggedIn = () => {
+    setIsLoggedIn(true)
+  }
+
   const submitLogin = async () => {
     const form = {
       username: usernameRef.current,
@@ -37,6 +43,7 @@ export default function Login({ setToken }) {
 
       setToken(response.data.auth_token);
       handleSaveToken(response.data.auth_token);
+      handleIsLoggedIn();
     } catch (error) {
       console.error('Error during login:', error);
     }
@@ -59,6 +66,8 @@ export default function Login({ setToken }) {
       });
 
       setToken(response.data.auth_token);
+      handleSaveToken(response.data.auth_token);
+      handleIsLoggedIn()
     } catch (error) {
       console.error('Error during registration:', error);
     }
