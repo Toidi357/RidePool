@@ -6,6 +6,7 @@ import logging
 
 from dateutil import parser
 
+from sqlalchemy.orm import aliased
 from sqlalchemy import func
 from datetime import datetime
 from geolocation import get_location
@@ -262,17 +263,23 @@ def get_rides():
     if not desired_destination_latitude or not desired_destination_longitude:
         return jsonify({"error": "Missing desired destination location"}), 400
 
+    # FIX THIS START
+    subquery = (
+        db.session.query(Ride.ride_id, func.count(Ride.members).label('member_count'))
+        .group_by(Ride.ride_id)
+        .subquery()
+    )
+    RideAlias = aliased(Ride, subquery)
     
-    rides = Ride.query.filter(
+    rides = db.session.query(Ride).join(
+        subquery, Ride.ride_id == subquery.c.ride_id
+    ).filter(
         (Ride.earliest_pickup_time >= min_date) &
-        (Ride.latest_pickup_time <= max_date) 
-        # &
-        # (Ride.creator_id != user.user_id) &
-        # TODO: AUTHENTICATION ISN'T WORKING, CAN'T DO THIS CHECK
-
-        # (func.count(Ride.members) < Ride.max_group_size) 
-        # TODO: SQLALCHEMY TELLS ME AN ERROR: MISUSE OF COUNT FUNCTION ON THIS LINE. I DISABLED IT.
+        (Ride.latest_pickup_time <= max_date) &
+        (Ride.creator_id != user.user_id) &
+        (subquery.c.member_count < Ride.max_group_size)
     ).all()
+    # FIX THIS END
 
     logging.info(f"Retrieved {len(rides)} rides from the database")
 
