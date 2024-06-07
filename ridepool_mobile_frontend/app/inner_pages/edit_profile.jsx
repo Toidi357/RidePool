@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Button } from 'react-native';
+import { Text, ScrollView, StyleSheet, Button } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '../../config'; 
 import { useNavigation } from '@react-navigation/native';
 
-import { saveToken, fetchToken } from '../components/token_funcs';
+import { sendAuthorizedGetRequest, sendAuthorizedPostRequest } from '../components/sendRequest';
 
 const EditProfileForm = ({ route }) => {
-
-    const handleSaveToken = async (token) => {
-    await saveToken(newToken);
-  };
- 
-  const handleFetchToken = async () => {
-    return await fetchToken();
-  };
   const { username } = route.params;
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -28,10 +18,7 @@ const EditProfileForm = ({ route }) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = await fetchToken();
-        const response = await axios.get(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await sendAuthorizedGetRequest('/profile')
         const { first_name, last_name, phone_number, email } = response.data;
         setFirstName(first_name);
         setLastName(last_name);
@@ -48,18 +35,12 @@ const EditProfileForm = ({ route }) => {
 
   const handleUpdateProfile = async () => {
     try {
-      const token = await handleFetchToken();
-      await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/profile/update`, {
+      await sendAuthorizedPostRequest('/profile/update', {
         first_name: firstName,
         last_name: lastName,
         phone_number: phoneNumber,
         email: email,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      })
       alert('Profile updated successfully!');
       navigation.navigate('Profile'); 
     } catch (err) {

@@ -1,26 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { TextInput, Button, Switch, Card, Text, Title, Paragraph } from 'react-native-paper';
-import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'; // from '@env';
+import { Button, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
 
-import { saveToken, fetchToken } from '../components/token_funcs';
-
-import { sendAuthorizedPostRequest } from "../components/sendRequest"
-
 export default function App() {
-
-  const handleSaveToken = async (token) => {
-    await saveToken(newToken);
-  };
-
-  const handleFetchToken = async () => {
-    return await fetchToken();
-  };
-
-  const [error, setError] = useState(null);
   const [currentRides, setCurrentRides] = useState(null)
 
   const navigation = useNavigation();

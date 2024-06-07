@@ -1,23 +1,14 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import { TextInput, Button, Switch } from 'react-native-paper';
-import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '../../config' // '@env';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationInput from '../components/LocationInput';
 import { useNavigation } from '@react-navigation/native';
 
-import { saveToken, fetchToken } from '../components/token_funcs';
+import { sendAuthorizedPostRequest } from '../components/sendRequest';
 
 
 const RidepoolForm = () => {
-  const handleSaveToken = async (token) => {
-    await saveToken(newToken);
-  };
- 
-  const handleFetchToken = async () => {
-    return await fetchToken();
-  };
 
   const [pickupRadius, setPickupRadius] = useState('');
   const [description, setDescription] = useState('');
@@ -67,14 +58,8 @@ const RidepoolForm = () => {
     }
 
     try {
-      let token = await handleFetchToken();
       console.log(`requesting http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`)
-      const response = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`, form, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await sendAuthorizedPostRequest('/rides', form)
       console.log(response)
 
       
