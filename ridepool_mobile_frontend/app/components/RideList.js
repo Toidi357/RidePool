@@ -153,9 +153,14 @@ export default RideList = ({ rides, displayRelationship }) => {
     <>
       {rides != null ? (
         <ScrollView style={styles.container}>
-          {rides.map(ride => (
+          {rides
+          .filter((ride, index, self) =>
+            self.findIndex(r => r.rideIds === ride.rideId && r.relationship === "creator") !== -1 || 
+            ride.relationship === "creator")
+          .map(ride => (
             <RideCard key={ride.rideId} ride={ride} displayRelationship={displayRelationship} />
           ))}
+
         </ScrollView>
       ) : (
         <></>
