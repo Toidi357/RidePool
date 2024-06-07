@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from config import app, db
-from models import User, Ride, BlacklistToken
+from models import User, Ride
 from datetime import datetime
 import logging
 from dateutil import parser
@@ -13,7 +13,8 @@ from geopy.distance import distance
 
 from flask_migrate import Migrate
 
-from routes import test, register, login
+from routes import test
+from routes.auth import login, register, logout, refresh_token
 
 migrate = Migrate(app, db)
 
@@ -47,47 +48,8 @@ def check_authentication(request) -> User:
             raise Unauthorized(resp)
     
     raise Unauthorized('Unauthorized')
+app.config.Unauthorized = Unauthorized
 app.config.check_authentication = check_authentication
-
-@app.route('/logout', methods=['GET'])
-def logout():
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        auth_token = auth_header.split(" ")[1]
-    else:
-        auth_token = ''
-    if auth_token:
-        resp = User.decode_auth_token(auth_token)
-        if not isinstance(resp, str):
-            # mark the token as blacklisted
-            blacklist_token = BlacklistToken(token=auth_token)
-            try:
-                # insert the token
-                db.session.add(blacklist_token)
-                db.session.commit()
-                responseObject = {
-                    'message': 'Logout successful'
-                }
-                return jsonify(responseObject), 200
-            except Exception as e:
-                return jsonify({'message': 'Error'}), 500
-            
-    logging.info("User logged out succesfully")
-    return jsonify({"message": "Unauthorized"}), 401
-
-# aight we really getting into the weeds with this one
-@app.route('/refresh_token', methods=['GET'])
-def generate_refresh_token():
-    try:
-        user = check_authentication(request)
-    except Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
-
-    try:
-        auth_token = user.encode_auth_token(user.username)
-        return jsonify({"auth_token": auth_token}), 200
-    except:
-        return jsonify({"Internal Server Error"}), 500
 
 @app.route('/profile', methods=['GET'])
 def get_user_profile():
