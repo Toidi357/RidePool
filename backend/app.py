@@ -630,6 +630,21 @@ def gemini_query():
     logging.info(f"Gemini returned response: {response}")
     return jsonify({"response": response}), 200
 
+@app.route('/rides/active/<int:ride_id>', methods=['GET'])
+def get_ride_status(ride_list=None, ride_id=None):
+    try:
+        user = check_authentication(request)  
+    except Unauthorized as e:
+        return jsonify({"message": str(e)}), 401
+    
+    ride = Ride.query.get_or_404(ride_id)
+    now = datetime.now()
+
+    if ride.latest_pickup_time > now:
+        return jsonify({"ride_status": "active"}), 200
+    else:
+        return jsonify({"ride_status": "history"}), 200
+
 
 if __name__ == "__main__":
     port = 5000

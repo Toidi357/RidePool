@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
-import { Card, Text, Title, Paragraph, Button } from 'react-native-paper';
+import { Card, Text, Title, Paragraph, Button, TouchableRipple } from 'react-native-paper';
 import axios from 'axios';
 
-import { sendAuthorizedPostRequest } from "../components/sendRequest"
+import { sendAuthorizedPostRequest, sendAuthorizedGetRequest } from "../components/sendRequest"
+import { useNavigation } from '@react-navigation/native';
+import { fetchToken, setToken} from '../components/token_funcs';
 
 const reverseGeocode = async (latitude, longitude) => {
   try {
@@ -22,6 +24,14 @@ const reverseGeocode = async (latitude, longitude) => {
 const RideCard = ({ ride, displayRelationship }) => {
   const [pickupLocation, setPickupLocation] = useState('');
   const [destinationLocation, setDestinationLocation] = useState('');
+  const [active, setActive] = useState('')
+  const [error, setError] = useState(null);
+  const navigation = useNavigation();
+  
+
+  const handleFetchToken = async () => {
+    return await fetchToken();
+  };
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -31,14 +41,37 @@ const RideCard = ({ ride, displayRelationship }) => {
       setDestinationLocation(destination);
     };
 
+    const fetchStatus = async () => {
+      let token = await handleFetchToken();
+      try {
+        console.log("Set the Status");
+        const response = await sendAuthorizedGetRequest(`/rides/active/${ride.rideId}`);
+        setActive(response.data.ride_status);
+      } catch (err) {
+        console.error('Error fetching getting ride status', err);
+        setError(err.toString());
+      }
+    };
+
     if (ride) {
       fetchLocations();
+      fetchStatus();
     }
   }, [ride]);
 
   if (!ride) {
     return null;
   }
+
+  const handlePress = () => {
+    if (active === 'active') {
+      console.log("Active Rides Pressed");
+      navigation.navigate('Active Rides', { rideId: ride.rideId });
+    } else if (active === 'history') {
+      console.log("History Rides Pressed");
+      navigation.navigate('History Rides', { rideId: ride.rideId });
+    }
+  };
 
   let status;
   if (displayRelationship) {
@@ -60,19 +93,21 @@ const RideCard = ({ ride, displayRelationship }) => {
     };
 
   return (
-    <Card style={styles.card}>
-      <Card.Content>
-        <Text style = {styles.locations}>{pickupLocation} to {destinationLocation}</Text>
-        {displayRelationship ? (<Paragraph style={styles.italics}>{status}</Paragraph>) : (<></>) }
-        <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
-        <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
-      </Card.Content>
-      {ride.relationship === "member" && (
-        <Card.Actions>
-          <Button mode="contained" onPress={() => onLeave(ride.rideId)}>Leave</Button>
-        </Card.Actions>
-      )}
-    </Card>
+    <TouchableRipple onPress={handlePress}>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style = {styles.locations}>{pickupLocation} to {destinationLocation}</Text>
+          {displayRelationship ? (<Paragraph style={styles.italics}>{status}</Paragraph>) : (<></>) }
+          <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
+          <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
+        </Card.Content>
+        {ride.relationship === "member" && (
+          <Card.Actions>
+            <Button mode="contained" onPress={() => onLeave(ride.rideId)}>Leave</Button>
+          </Card.Actions>
+        )}
+      </Card>
+      </TouchableRipple>
   );
 };
 
@@ -96,7 +131,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-  },
+  }, 
   locations: {
     fontSize: 15,
     fontWeight: 'bold'
