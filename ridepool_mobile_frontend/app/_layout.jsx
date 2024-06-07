@@ -15,6 +15,9 @@ import Gemini from '@/app/tabs/gemini_help';
 import CreateRidepoolScreen from '@/app/inner_pages/create_ridepool'
 import FilterRidepoolScreen from '@/app/inner_pages/filter_ridepool'
 import EditProfileScreen from '@/app/inner_pages/edit_profile'
+import ActiveRidesScreen from '@/app/inner_pages/active_rides'
+import HistoryRidesScreen from '@/app/inner_pages/history_rides'
+
 
 import { saveToken, fetchToken } from './components/token_funcs';
 import { AuthProvider, useAuth } from './components/AuthContext';
@@ -27,6 +30,8 @@ function MyRidepoolsStack() {
     <Stack.Navigator>
       <Stack.Screen name="My Ridepools" component={MyRidepoolsScreen} />
       <Stack.Screen name="Create Ridepool" component={CreateRidepoolScreen} />
+      <Stack.Screen name="Active Rides" component={ActiveRidesScreen} />
+      <Stack.Screen name="History Rides" component={HistoryRidesScreen} />
     </Stack.Navigator>
 
   )
