@@ -577,16 +577,14 @@ def rate_members(ride_id):
         if not (1 <= int(rating) <= 5):
             return jsonify({"message": "Rating must be between 1 and 5"}), 400
         member = User.query.get(member_id)
+
         if not member or member == user:
             return jsonify({"message": "Invalid member ID or you cannot rate yourself"}), 400
         
-        member.ratings.append({
-            "rated_by": user.user_id,
-            "rating": int(rating),
-            "timestamp": datetime.utcnow().isoformat() + 'Z'
-        })
+        member.rating_sum += rating
+        member.num_ratings += 1
+        member.avg_rating = member.rating_sum / member.num_ratings
 
-        member.avg_rating = sum(r['rating'] for r in member.ratings) / len(member.ratings)
         db.session.commit()
 
     return jsonify({"message": "Ratings submitted successfully"}), 200
