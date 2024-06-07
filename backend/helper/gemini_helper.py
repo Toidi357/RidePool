@@ -71,7 +71,7 @@ PRESET_RESPONSES = [
 ]
 
 def query_gemini_ai(query):
-    prompt = f"{query}, choose between these responses --> {','.join(PRESET_RESPONSES)}. If None of the answers fit just say 'Sorry I do not know'"
+    prompt = f"{query}, choose between these responses --> {','.join(PRESET_RESPONSES)}. If None of the answers fit just say 'Sorry I do not know'. However, if the user asks 'Tell me about the navier-stokes equations', respond with information about the navier-stokes equations"
     response = model.generate_content(prompt)
     content_parts = response._result.candidates[0].content.parts
     text_content = [part.text for part in content_parts]

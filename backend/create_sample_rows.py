@@ -1,5 +1,5 @@
-from config import db, bcrypt
-from app import app
+from config import app, db, bcrypt
+# from config import app
 from models import User, Ride
 from datetime import datetime, timedelta
 import random
@@ -12,19 +12,19 @@ def add_ratings_to_users(users):
         rated_by_users = random.sample([u for u in users if u.user_id != user.user_id], num_ratings)
         
         # Generate random ratings and append to user's ratings JSON
-        for rater in rated_by_users:
-            rating = {
-                "rated_by": rater.user_id,
-                "rating": random.randint(1, 5),  # Ratings between 1 and 5
-                "timestamp": datetime.now().isoformat() + 'Z'
-            }
-            user.ratings.append(rating)
+        # for rater in rated_by_users:
+        #     rating = {
+        #         "rated_by": rater.user_id,
+        #         "rating": random.randint(1, 5),  # Ratings between 1 and 5
+        #         "timestamp": datetime.now().isoformat() + 'Z'
+        #     }
+        #     user.ratings.append(rating)
         
         # Calculate and update average rating for the user
-        if user.ratings:
-            user.avg_rating = sum(r['rating'] for r in user.ratings) / len(user.ratings)
-        else:
-            user.avg_rating = None
+        # if user.ratings:
+        #     user.avg_rating = sum(r['rating'] for r in user.ratings) / len(user.ratings)
+        # else:
+        #     user.avg_rating = None
 
 def create_sample_data():
     with app.app_context():

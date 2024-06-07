@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, Button, Alert, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'
 import { saveToken, fetchToken } from './components/token_funcs';
 import { useAuth } from './components/AuthContext';
 
-export default function Login({ setToken }) {
+export default function Login() {
   const [error, setError] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
   const { isLoggedIn, setIsLoggedIn } = useAuth();
@@ -25,10 +25,6 @@ export default function Login({ setToken }) {
     await saveToken(token);
   };
 
-  const handleIsLoggedIn = () => {
-    setIsLoggedIn(true)
-  }
-
   const submitLogin = async () => {
     const form = {
       username: usernameRef.current,
@@ -41,11 +37,14 @@ export default function Login({ setToken }) {
         }
       });
 
-      setToken(response.data.auth_token);
       handleSaveToken(response.data.auth_token);
-      handleIsLoggedIn();
+      setIsLoggedIn(true);
     } catch (error) {
-      console.error('Error during login:', error);
+      if (error.response.status == 401) {
+        Alert.alert('Login Failed', 'Incorrect username or password.');
+        this.textInput.clear()
+      }
+      else console.error('Error during login:', error);
     }
   };
 
@@ -65,9 +64,8 @@ export default function Login({ setToken }) {
         }
       });
 
-      setToken(response.data.auth_token);
       handleSaveToken(response.data.auth_token);
-      handleIsLoggedIn()
+      setIsLoggedIn(true)
     } catch (error) {
       console.error('Error during registration:', error);
     }
@@ -100,12 +98,14 @@ export default function Login({ setToken }) {
               style={styles.input}
               placeholder="Username"
               onChangeText={(text) => handleInputChange(usernameRef, text)}
+              ref={input => {this.textInput = input}}
             />
             <TextInput
               style={styles.input}
               placeholder="Password"
               secureTextEntry
               onChangeText={(text) => handleInputChange(passwordRef, text)}
+              ref={input => {this.textInput = input}}
             />
             <Button title="Submit" onPress={submitLogin} />
           </View>

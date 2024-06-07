@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Colors } from '@/constants/Colors';
@@ -18,9 +17,10 @@ import EditProfileScreen from '@/app/inner_pages/edit_profile'
 import ActiveRidesScreen from '@/app/inner_pages/active_rides'
 import HistoryRidesScreen from '@/app/inner_pages/history_rides'
 
-
-import { saveToken, fetchToken } from './components/token_funcs';
+import { fetchToken } from './components/token_funcs';
 import { AuthProvider, useAuth } from './components/AuthContext';
+
+import { sendAuthorizedGetRequest } from './components/sendRequest';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -62,16 +62,6 @@ function ProfileStack() {
     </Stack.Navigator>
   )
 }
-
-function LoginStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name ="Login" component={Login} />
-    </Stack.Navigator>
-  )
-}
-
-
 
 function TabLayout() {
   const colorScheme = useColorScheme();
@@ -122,30 +112,28 @@ function TabLayout() {
 }
 
 function HomePage() {
-  const [token, setToken] = useState(null);
   const { isLoggedIn, setIsLoggedIn } = useAuth();
 
-  const handleSaveToken = async (token) => {
-    await saveToken(token);
-  };
-
-  const handleFetchToken = async () => {
-    const storedToken = await fetchToken();
-    setToken(storedToken);
-  };
-  console.log(isLoggedIn)
   useEffect(() => {
     const fetchTokenAsync = async () => {
-      const storedToken = await handleFetchToken();
-      setToken(storedToken);
+      const storedToken = await fetchToken();
+      if (storedToken) {
+        try {
+          // test the token to make sure it's valid, if its not, you'll get 401 error
+          await sendAuthorizedGetRequest('/profile')
+          setIsLoggedIn(true)
+        }
+        catch (e) {
+          setIsLoggedIn(false)
+        }
+      }
     };
     fetchTokenAsync();
   }, []);
-    if (isLoggedIn) {
-      return <TabLayout />
+  if (isLoggedIn) {
+    return <TabLayout />
   }else{
-    console.log("Not yet logged in! token is " + token)
-    return <Login setToken={setToken} />
+    return <Login />
   }
 }
 
