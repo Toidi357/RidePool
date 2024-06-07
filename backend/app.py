@@ -237,9 +237,8 @@ def create_ride():
         # preferred_apps=data['preferredApps']
     )
 
-    # Need to set up proper associations!
-    # new_ride.creator.append(user)
-
+    new_ride.creator.append(user)
+    new_ride.members.append(user)
 
     db.session.add(new_ride)
     db.session.commit()
