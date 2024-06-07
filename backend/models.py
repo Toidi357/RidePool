@@ -67,8 +67,8 @@ class User(db.Model):
     phone_number = Column(String(12), unique=True, nullable=False)
     latitude = Column(Float, nullable = True)
     longitude = Column(Float, nullable = True)
-    ratings = Column(JSON, default=[])
-    avg_rating = Column(Float, nullable = True, default=None)
+    rating_sum = Column(Float, nullable = False, default=0)
+    num_ratings = Column(Float, nullable = False, default=0)
 
     created_rides = relationship('Ride', back_populates='creator') # rides as creator
     rides = relationship('Ride', secondary=ride_member_association, back_populates='members') # rides as member
@@ -85,7 +85,7 @@ class User(db.Model):
             "latitude": self.latitude,
             "longitude": self.longitude,
             "rides": [ride.to_json() for ride in self.rides],
-            "averageRating": self.avg_rating
+            "averageRating": (self.rating_sum / self.num_ratings) if self.num_ratings > 0 else None
         }
     
     def encode_auth_token(self, username):
