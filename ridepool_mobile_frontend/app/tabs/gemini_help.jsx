@@ -1,23 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { TextInput, Button, Switch, Card, Text, Title, Paragraph } from 'react-native-paper';
-import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'; // from '@env';
-import { useNavigation } from '@react-navigation/native';
+import { TextInput, Button, Card, Title, Paragraph } from 'react-native-paper';
 
-import { saveToken, fetchToken } from '../components/token_funcs';
+import LoadingSpinner from '../components/loadingSpinner';
+import { sendAuthorizedPostRequest } from '../components/sendRequest';
 
-export default function App({ username }) {
+export default function App() {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState ('');
-
-  const handleSaveToken = async (token) => {
-    await saveToken(newToken);
-  };
- 
-  const handleFetchToken = async () => {
-    return await fetchToken();
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleQueryChange = (text) => {
     setQuery(text);
@@ -25,15 +16,11 @@ export default function App({ username }) {
 
   const handleQuerySubmit = async() => {
     try{
-      let token = await handleFetchToken();
-      console.log(`requesting http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/gemini_query`);
-      const res = await axios.post(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/gemini_query`, { query }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-      setResponse(res.data.response);
+      setLoading(true)
+      const response = await sendAuthorizedPostRequest('/gemini_query', { query })
+      setResponse(response.data.response);
       console.log(response);
+      setLoading(false)
     } catch (error) {
       console.error('Error querying Gemini AI: ', error);
       setResponse('An error occurred. Please try again.');
@@ -50,9 +37,16 @@ export default function App({ username }) {
           onChangeText={handleQueryChange}
           style={styles.input}
         />
-        <Button mode ="contained" onPress={handleQuerySubmit} styles ={styles.button}>
-          Ask Gemini
-        </Button>
+        {loading ? (
+          <Button mode="contained" styles ={styles.button}>
+            <LoadingSpinner />
+          </Button>
+        ) : (
+          <Button mode="contained" onPress={handleQuerySubmit} styles ={styles.button}>
+            Ask Gemini
+          </Button>
+        )}
+        
       </View>
       {response && (
         <Card style={styles.responseCard}>
