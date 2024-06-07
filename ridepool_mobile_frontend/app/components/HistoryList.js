@@ -5,30 +5,26 @@ import { Card, Paragraph, Button } from 'react-native-paper'; // if you use pick
 import { Picker } from '@react-native-picker/picker'; // if rratings are handled within cards
 import { fetchToken} from './token_funcs';
 import { sendAuthorizedGetRequest } from "./sendRequest";
-
+import { Rating } from 'react-native-ratings';
 
  
 
 const HistoryCard = ({ user, onRatingChange, ratings, currentUser }) => {
-    console.log('Current User ID:', currentUser, 'Type:', typeof currentUser);
-    console.log('User ID:', user.userId, 'Type:', typeof user.userId);
     return (
         <Card style={styles.card}>
             <Card.Content>
                 <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
                 <Paragraph style={styles.userRating}>Username: {user.username}</Paragraph>
                 {currentUser !== user.userId && (
-                    <Picker
-                        selectedValue={ratings[user.userId] === undefined ? null : ratings[user.userId]}
-                        style={{ height: 50, width: 150 }}
-                        onValueChange={(itemValue) => onRatingChange(user.userId, itemValue)}
-    >
-                    <Picker.Item label="Unrated" value={null} />
-                    {[1, 2, 3, 4, 5].map(value => (
-                        <Picker.Item key={value} label={`${value}`} value={value} />
-                    ))}
-                </Picker>
-            )}
+                    <Rating
+                        type="star"
+                        ratingCount={5}
+                        imageSize={30}
+                        onFinishRating={(rating) => onRatingChange(user.userId, rating)}
+                        startingValue={ratings[user.userId] || 0}
+                        isDisabled={false} 
+                    />
+                )}
             </Card.Content>
         </Card>
     );
@@ -43,8 +39,6 @@ const HistoryList = ({ users, onRatingChange, ratings, currentUser }) => {
         </ScrollView>
     );
 };
-
-
 
 const styles = StyleSheet.create({
     container: {
