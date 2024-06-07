@@ -6,6 +6,7 @@ import logging
 
 from dateutil import parser
 
+from sqlalchemy.orm import aliased
 from sqlalchemy import func
 from datetime import datetime
 from geolocation import get_location
@@ -16,7 +17,7 @@ from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
 
-logging.basicConfig(filename = 'app.log', level = logging.DEBUG, format = '%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level = logging.DEBUG, format = '%(asctime)s - %(levelname)s - %(message)s')
 
 class Unauthorized(Exception):
     def __init__(self, message):
@@ -262,17 +263,23 @@ def get_rides():
     if not desired_destination_latitude or not desired_destination_longitude:
         return jsonify({"error": "Missing desired destination location"}), 400
 
+    # FIX THIS START
+    subquery = (
+        db.session.query(Ride.ride_id, func.count(Ride.members).label('member_count'))
+        .group_by(Ride.ride_id)
+        .subquery()
+    )
+    RideAlias = aliased(Ride, subquery)
     
-    rides = Ride.query.filter(
+    rides = db.session.query(Ride).join(
+        subquery, Ride.ride_id == subquery.c.ride_id
+    ).filter(
         (Ride.earliest_pickup_time >= min_date) &
-        (Ride.latest_pickup_time <= max_date) 
-        # &
-        # (Ride.creator_id != user.user_id) &
-        # TODO: AUTHENTICATION ISN'T WORKING, CAN'T DO THIS CHECK
-
-        # (func.count(Ride.members) < Ride.max_group_size) 
-        # TODO: SQLALCHEMY TELLS ME AN ERROR: MISUSE OF COUNT FUNCTION ON THIS LINE. I DISABLED IT.
+        (Ride.latest_pickup_time <= max_date) &
+        (Ride.creator_id != user.user_id) &
+        (subquery.c.member_count < Ride.max_group_size)
     ).all()
+    # FIX THIS END
 
     logging.info(f"Retrieved {len(rides)} rides from the database")
 
@@ -570,16 +577,14 @@ def rate_members(ride_id):
         if not (1 <= int(rating) <= 5):
             return jsonify({"message": "Rating must be between 1 and 5"}), 400
         member = User.query.get(member_id)
+
         if not member or member == user:
             return jsonify({"message": "Invalid member ID or you cannot rate yourself"}), 400
         
-        member.ratings.append({
-            "rated_by": user.user_id,
-            "rating": int(rating),
-            "timestamp": datetime.utcnow().isoformat() + 'Z'
-        })
+        member.rating_sum += rating
+        member.num_ratings += 1
+        member.avg_rating = member.rating_sum / member.num_ratings
 
-        member.avg_rating = sum(r['rating'] for r in member.ratings) / len(member.ratings)
         db.session.commit()
 
     return jsonify({"message": "Ratings submitted successfully"}), 200

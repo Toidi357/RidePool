@@ -6,6 +6,7 @@ import { fetchToken } from '../components/token_funcs';
 import { sendAuthorizedGetRequest, sendAuthorizedPostRequest } from "../components/sendRequest";
 import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '../../config'
+import { useNavigation } from '@react-navigation/native';
 
 const HistoryRides = ({ route }) => {
     const { rideId } = route.params;
@@ -13,6 +14,7 @@ const HistoryRides = ({ route }) => {
     const [ratings, setRatings] = useState({});
     const [error, setError] = useState('');
     const [id, setId] = useState(null);
+    const navigation = useNavigation();
 
     const handleFetchToken = async () => {
         return await fetchToken();
@@ -35,7 +37,7 @@ const HistoryRides = ({ route }) => {
         const fetchUsers = async () => {
             let token = await handleFetchToken();
             try {
-                const response = await sendAuthorizedGetRequest(`/rides/${rideId}/members`);
+                const response = await sendAuthorizedGetRequest(`/rides/${rideId}/members_to_rate`);
                 setUsers(response.data); // Assuming the response data is directly usable
                 const newRatings = {};
                 response.data.forEach(user => {
