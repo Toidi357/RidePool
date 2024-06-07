@@ -8,7 +8,9 @@ const UserCard = ({ user }) => {
         <Card style={styles.card}>
             <Card.Content>
                 <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
+                <Paragraph style={styles.userRating}>Username: {user.username}</Paragraph>
                 <Paragraph style={styles.userRating}>Rating: {user.averageRating}</Paragraph>
+                <Paragraph style={styles.userRating}>Phone Number: {user.phoneNumber}</Paragraph>
             </Card.Content>
         </Card>
     );

@@ -168,6 +168,7 @@ def get_user_profile():
         return jsonify({"message": e.args[0]}), 401
     
     responseObject = {
+        "userId": user.user_id,
         'username': user.username,
         'first_name': user.first_name,
         'last_name': user.last_name,
@@ -238,7 +239,8 @@ def create_ride():
     )
 
     # Need to set up proper associations!
-    # new_ride.creator.append(user)
+    new_ride.creator.append(user)
+    new_ride.members.append(user)
 
 
     db.session.add(new_ride)
