@@ -102,39 +102,6 @@ const RideCard = ({ ride, displayRelationship }) => {
     }
 
   return (
-<<<<<<< HEAD
-    <Card style={styles.card}>
-      <Card.Content>
-        <Text style = {styles.locations}>{pickupLocation} to {destinationLocation}</Text>
-        {displayRelationship ? (<Paragraph style={styles.italics}>{status}</Paragraph>) : (<></>) }
-        <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
-        <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
-        {(ride.relationship !== "member" && ride.relationship !== "creator") &&(
-        <View style={styles.buttonContainer}>
-          {requested ? (
-            <>
-              <Button mode="contained" disabled>
-                Requested
-              </Button>
-              <Button mode="contained" onPress={unRequest}>
-                Leave
-              </Button>
-            </>
-          ) : (
-            <Button mode="contained" onPress={handleRequest}>
-              Request
-            </Button>
-          )}
-        </View>
-        )}
-      </Card.Content>
-      {ride.relationship === "member" && (
-        <Card.Actions>
-          <Button mode="contained" onPress={() => onLeave(ride.rideId)}>Leave</Button>
-        </Card.Actions>
-      )}
-    </Card>
-=======
     <TouchableRipple onPress={handlePress}>
       <Card style={styles.card}>
         <Card.Content>
@@ -150,7 +117,6 @@ const RideCard = ({ ride, displayRelationship }) => {
         )}
       </Card>
       </TouchableRipple>
->>>>>>> 6f93ea30dec81c9ad612addd77f09b82e1c2b62e
   );
 };
 
