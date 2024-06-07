@@ -2,10 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Button, ScrollView, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
 import { useNavigation, useFocusEffect, } from '@react-navigation/native';
-import axios from 'axios';
 
-import { fetchToken, clearToken } from '../components/token_funcs';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js';
+import { clearToken } from '../components/token_funcs';
 import { sendAuthorizedGetRequest } from '../components/sendRequest'
 import { useAuth } from '../components/AuthContext';
 
@@ -18,19 +16,13 @@ export default function App(){
     setIsLoggedIn(false);
   }
 
-
- const handleFetchToken = async () => {
-   return await fetchToken();
- };
-
-
- const [error, setError] = useState(null);
- const [username, setUsername] = useState(null);
- const [rating, setRating] = useState(null);
- const [phoneNumber, setPhoneNumber] = useState(null);
- const [email, setEmail] = useState(null);
- const [firstName, setFirstName] = useState(null);
- const [lastName, setLastName] = useState(null);
+  const [error, setError] = useState(null);
+  const [username, setUsername] = useState(null);
+  const [rating, setRating] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [firstName, setFirstName] = useState(null);
+  const [lastName, setLastName] = useState(null);
   const navigation = useNavigation();
 
 
@@ -60,18 +52,10 @@ export default function App(){
   );
 
   const handleLogout = async () => {
-    const token = await handleFetchToken();
     try {
-      const response = await axios.get(`http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/logout`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await sendAuthorizedGetRequest('/logout')
       console.log('Logout successful:', response.data.message);
       await clearToken();  // Clear the token from local storage or state
-      //setToken(null);
-      //navigation.navigate('Login'); // Navigate to the login screen
       logOut()
     } catch (err) {
       console.error('Logout failed:', err);

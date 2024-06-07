@@ -1,23 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { TextInput, Button, Switch, Card, Text, Title, Paragraph } from 'react-native-paper';
-import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'; // from '@env';
+import { Button, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import RideList from "../components/RideList"
 
-import { saveToken, fetchToken } from '../components/token_funcs';
-import { sendAuthorizedGetRequest, sendAuthorizedPostRequest } from '../components/sendRequest'
+import { sendAuthorizedPostRequest } from '../components/sendRequest'
 
 export default function App() {
-
-  const handleSaveToken = async (token) => {
-    await saveToken(newToken);
-  };
-
-  const handleFetchToken = async () => {
-    return await fetchToken();
-  };
 
   const [error, setError] = useState(null);
   const [currentRides, setCurrentRides] = useState(null)
@@ -30,17 +19,10 @@ export default function App() {
     getUserRides('current', setCurrentRides);
     getUserRides('history', setHistoryRides);
 
-    // testing here
-    sendAuthorizedGetRequest('/profile').then(response => {
-      console.log(response.data)
-    })
-
   }, []);
 
 
   const getUserRides = async (time, setWhat) => {
-    let token = await handleFetchToken();
-
     try {
       const response = await sendAuthorizedPostRequest(`/users/rides`, {
         'time' : time

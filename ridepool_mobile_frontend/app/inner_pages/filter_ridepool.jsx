@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, ScrollView } from 'react-native';
-import { TextInput, Button, Switch } from 'react-native-paper';
-import axios from 'axios';
-import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '../../config' // '@env';
+import { TextInput, Button } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LocationInput from '../components/LocationInput';
 import { useNavigation } from '@react-navigation/native';
