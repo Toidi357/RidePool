@@ -15,6 +15,7 @@ from flask_migrate import Migrate
 from routes import test, gemini_query
 from routes.auth import login, register, logout, refresh_token
 from routes.profile import get_user_profile, update_user_profile
+from routes.users import get_user_rides, get_user_upcoming_rides
 
 migrate = Migrate(app, db)
 
@@ -171,7 +172,6 @@ def get_rides():
     logging.info(f"Returning {len(sorted_rides)} sorted rides")
 
     return jsonify([ride.to_json() for ride in sorted_rides])
-
 
 @app.route('/rides/<int:ride_id>', methods=['PUT'])
 def update_ride(ride_id):
@@ -363,59 +363,7 @@ def get_ride_requesters(ride_id):
     logging.info(f"User {user.user_id} successfully retrieved members of ride {ride_id}")
     return jsonify([requester.to_json() for requester in requesters]), 200
 
-@app.route('/users/rides', methods=['GET', 'POST'])
-def get_user_rides():
-    logging.info("get user rides request received. ")
-    try:
-        user = app.config.check_authentication(request)
-    except app.config.Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
 
-    data = request.json
-    ride_type = data.get('time', 'all')  # Get the type parameter from the request, default to 'all'  
-    logging.info(f"Fetching data for user {user.username}") 
-
-    created_rides = user.created_rides
-    member_rides = user.rides
-    requested_rides = user.requested_rides
-
-    logging.info(f"User {user.username} data retrieved. Filtering rides by type: {ride_type}")
-
-    now = datetime.now()
-
-    def filter_rides(rides, ride_type):
-        if ride_type == 'current':
-            return [ride for ride in rides if ride.latest_pickup_time > now]
-        elif ride_type == 'history':
-            return [ride for ride in rides if ride.latest_pickup_time <= now]
-        else:  # 'all'
-            return rides
-
-    filtered_created_rides = filter_rides(created_rides, ride_type)
-    filtered_member_rides = filter_rides(member_rides, ride_type)
-    filtered_requested_rides = filter_rides(requested_rides, ride_type)
-
-    logging.info(f"Rides filtered  for user {user.username}: {len(filtered_created_rides)} created, {len(filtered_member_rides)} joined")
-
-    return jsonify({
-        "created_rides": [ride.to_json() for ride in filtered_created_rides],
-        "member_rides": [ride.to_json() for ride in filtered_member_rides],
-        "requested_rides": [ride.to_json() for ride in filtered_requested_rides]
-    }), 200
-
-@app.route('/users/upcoming_rides', methods=['GET'])
-def get_user_upcoming_rides():
-    try:
-        user = app.config.check_authentication(request)
-    except app.config.Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
-
-    logging.info(f"Fetching upcoming rides for user {user.username}")
-    user = User.query.get_or_404(user.username)
-    upcoming_rides = [ride for ride in user.rides if ride.latest_pickup_time > datetime.now()]
-
-    logging.info(f"Upcoming rides filtered for user {user.username}")
-    return jsonify([ride.to_json() for ride in upcoming_rides]), 200
 
 @app.route('/rides/<int:ride_id>/rate_members', methods=['POST'])
 def rate_members(ride_id):
