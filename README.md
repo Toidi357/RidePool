@@ -96,8 +96,8 @@
  When developing protected API endpoints, add this code at the beginning:
  ```
  try:
-    user = check_authentication(request)
- except Unauthorized as e:
+    user = app.config.check_authentication(request)
+ except app.config.Unauthorized as e:
     return jsonify({"message": e.args[0]})
  ```
  Now the `user` variable has all the information you'll need \
