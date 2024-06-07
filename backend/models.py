@@ -67,8 +67,8 @@ class User(db.Model):
     phone_number = Column(String(12), unique=True, nullable=False)
     latitude = Column(Float, nullable = True)
     longitude = Column(Float, nullable = True)
-    rating_sum = Column(Float, nullable = True, default=0)
-    num_ratings = Column(Float, nullable = True, default=0)
+    rating_sum = Column(Float, nullable = False, default=0)
+    num_ratings = Column(Float, nullable = False, default=0)
     avg_rating = Column(Float, nullable = True, default=None)
 
     created_rides = relationship('Ride', back_populates='creator') # rides as creator

@@ -46,7 +46,6 @@ def create_ride():
     new_ride.creator.append(user)
     new_ride.members.append(user)
 
-
     db.session.add(new_ride)
     db.session.commit()
 
