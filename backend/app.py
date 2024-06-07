@@ -161,6 +161,7 @@ def get_user_profile():
         return jsonify({"message": e.args[0]}), 401
     
     responseObject = {
+        "userId": user.user_id,
         'username': user.username,
         'first_name': user.first_name,
         'last_name': user.last_name,
@@ -231,6 +232,7 @@ def create_ride():
 
     new_ride.creator.append(user)
     new_ride.members.append(user)
+
 
     db.session.add(new_ride)
     db.session.commit()
@@ -353,7 +355,6 @@ def join_ride(ride_id):
     logging.info(f"User {current_user_id} is attempting to join ride {ride_id}")
     ride = Ride.query.get_or_404(ride_id)
     logging.info(f"Ride {ride_id} retrieved from the database")
-    user = User.query.get_or_404(user.username)
     logging.info(f"User {user.username} retrieved from the database")
 
     logging.info(f"User {user.username} is requesting to join ride {ride_id}")

@@ -84,7 +84,7 @@ const RideCard = ({ ride, displayRelationship }) => {
     }
     }
     const [currentRides, setCurrentRides] = useState(null)
-    const [requested, setRequested] = useState(false);
+    const [requested, setRequested] = useState(ride.relationship === "requester");
     const onLeave = async (rideId) => {
       try {
         await sendAuthorizedPostRequest(`/rides/${rideId}/leave`);
@@ -93,48 +93,25 @@ const RideCard = ({ ride, displayRelationship }) => {
       }
     };
 
-    const handleRequest = () => {
+    const handleRequest = async(rideId) => {
       setRequested(true);
+      try {
+        await sendAuthorizedPostRequest(`/rides/${rideId}/join`);
+      } catch (err) {
+        console.error('Error requesting ride: ', err);
+      }
     };
 
-    const unRequest = () => {
+    const unRequest = async(rideId) => {
       setRequested(false);
+      try {
+        await sendAuthorizedPostRequest(`/rides/${rideId}/cancel_request`);
+      } catch (err) {
+        console.error('Error unrequesting: ', err);
+      }
     }
 
   return (
-<<<<<<< HEAD
-    <Card style={styles.card}>
-      <Card.Content>
-        <Text style = {styles.locations}>{pickupLocation} to {destinationLocation}</Text>
-        {displayRelationship ? (<Paragraph style={styles.italics}>{status}</Paragraph>) : (<></>) }
-        <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
-        <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
-        {(ride.relationship !== "member" && ride.relationship !== "creator") &&(
-        <View style={styles.buttonContainer}>
-          {requested ? (
-            <>
-              <Button mode="contained" disabled>
-                Requested
-              </Button>
-              <Button mode="contained" onPress={unRequest}>
-                Leave
-              </Button>
-            </>
-          ) : (
-            <Button mode="contained" onPress={handleRequest}>
-              Request
-            </Button>
-          )}
-        </View>
-        )}
-      </Card.Content>
-      {ride.relationship === "member" && (
-        <Card.Actions>
-          <Button mode="contained" onPress={() => onLeave(ride.rideId)}>Leave</Button>
-        </Card.Actions>
-      )}
-    </Card>
-=======
     <TouchableRipple onPress={handlePress}>
       <Card style={styles.card}>
         <Card.Content>
@@ -142,15 +119,32 @@ const RideCard = ({ ride, displayRelationship }) => {
           {displayRelationship ? (<Paragraph style={styles.italics}>{status}</Paragraph>) : (<></>) }
           <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
           <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
+          {(ride.relationship !== "member" && ride.relationship !== "creator" && active !== "history") && (
+            <View style={styles.buttonContainer}>
+              {requested ? (
+                <>
+                  <Button mode="contained" disabled>
+                    Requested
+                  </Button>
+                  <Button mode="contained" onPress={() => unRequest(ride.rideId)}>
+                    Leave
+                  </Button>
+                </>
+              ) : (
+                <Button mode="contained" onPress={() => handleRequest(ride.rideId)}>
+                  Request
+                </Button>
+              )}
+            </View>
+          )}
         </Card.Content>
-        {ride.relationship === "member" && (
+        {(ride.relationship === "member" && active !== "history") && (
           <Card.Actions>
             <Button mode="contained" onPress={() => onLeave(ride.rideId)}>Leave</Button>
           </Card.Actions>
         )}
       </Card>
       </TouchableRipple>
->>>>>>> 6f93ea30dec81c9ad612addd77f09b82e1c2b62e
   );
 };
 
