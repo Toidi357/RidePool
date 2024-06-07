@@ -66,7 +66,7 @@ const RideCard = ({ ride, displayRelationship }) => {
   const handlePress = () => {
     if (active === 'active') {
       console.log("Active Rides Pressed");
-      navigation.navigate('Active Rides', { rideId: ride.rideId });
+      navigation.navigate('Active Rides', { rideId: ride.rideId, ride: ride });
     } else if (active === 'history') {
       console.log("History Rides Pressed");
       navigation.navigate('History Rides', { rideId: ride.rideId });
