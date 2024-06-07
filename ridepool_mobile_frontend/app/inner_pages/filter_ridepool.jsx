@@ -60,7 +60,7 @@ const RidepoolForm = ({ route }) => {
     }
 
     try {
-      response = await sendAuthorizedPostRequest('/searchrides', form)
+      response = await sendAuthorizedPostRequest('/rides/search', form)
       setCurrentRides(response.data)
       navigation.navigate('Search for Ridepools')
 

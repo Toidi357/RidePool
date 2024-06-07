@@ -99,7 +99,7 @@ def create_ride():
     logging.info (f"New ride created succesfully: {new_ride.to_json()}")
     return jsonify(new_ride.to_json()), 201
 
-@app.route('/searchrides', methods=['POST'])
+@app.route('/rides/search', methods=['POST'])
 def get_rides():
     try:
         user = check_authentication(request)
