@@ -4,9 +4,9 @@ import { Card } from 'react-native-paper';
 import { useNavigation, useFocusEffect, } from '@react-navigation/native';
 import axios from 'axios';
 
-import { fetchToken, clearToken, setToken} from '../components/token_funcs';
+import { fetchToken, clearToken } from '../components/token_funcs';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js';
-import { sendAuthorizedGetRequest, sendAuthorizedPostRequest } from '../components/sendRequest'
+import { sendAuthorizedGetRequest } from '../components/sendRequest'
 import { useAuth } from '../components/AuthContext';
 
 
@@ -17,10 +17,6 @@ export default function App(){
   const logOut = () => {
     setIsLoggedIn(false);
   }
-
- const handleSaveToken = async (token) => {
-   await saveToken(newToken);
- };
 
 
  const handleFetchToken = async () => {
@@ -39,7 +35,6 @@ export default function App(){
 
 
   const fetchUserProfile = async () => {
-    let token = await fetchToken();
     try {
       const response = await sendAuthorizedGetRequest('/profile');
       setUsername(response.data.username);

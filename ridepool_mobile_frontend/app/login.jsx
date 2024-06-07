@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { SERVER_IPV4_ADDRESS, SERVER_PORT } from '@/config.js'
-import { saveToken, fetchToken } from './components/token_funcs';
+import { saveToken } from './components/token_funcs';
 import { useAuth } from './components/AuthContext';
 
 export default function Login() {
@@ -21,10 +21,6 @@ export default function Login() {
     ref.current = value;
   };
 
-  const handleSaveToken = async (token) => {
-    await saveToken(token);
-  };
-
   const submitLogin = async () => {
     const form = {
       username: usernameRef.current,
@@ -37,7 +33,7 @@ export default function Login() {
         }
       });
 
-      handleSaveToken(response.data.auth_token);
+      await saveToken(response.data.auth_token);
       setIsLoggedIn(true);
     } catch (error) {
       if (error.response.status == 401) {
@@ -64,7 +60,7 @@ export default function Login() {
         }
       });
 
-      handleSaveToken(response.data.auth_token);
+      await saveToken(response.data.auth_token);
       setIsLoggedIn(true)
     } catch (error) {
       console.error('Error during registration:', error);
