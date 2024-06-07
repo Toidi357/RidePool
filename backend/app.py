@@ -34,7 +34,6 @@ def check_authentication(request) -> User:
     if auth_token: # means user *has* a token
         # resp should contain an object with the decoded token details
         # if its a string, that means its an error
-        print("attempting to decode token "+ auth_token)
         resp = User.decode_auth_token(auth_token)
         
         if not isinstance(resp, str):
@@ -84,8 +83,6 @@ def register():
 
 @app.route('/login', methods=['POST'])
 def login():
-    print("login attempt")
-
     data = request.json
 
     logging.info(f"Received login request data: {data}")
@@ -104,12 +101,9 @@ def login():
             }
             # Capture the location
             location_data = get_location()
-            print(location_data)
             user.latitude = location_data['location']['lat']
             
             user.longitude = location_data['location']['lng']
-            print("RESPONSE OBJ")
-            print(responseObject)
 
             return jsonify(responseObject), 200
         
@@ -117,7 +111,6 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     
     logging.warning("Invalid login credentials")
-    print("invalid login credentials")
     return jsonify({"message": "Invalid credentials"}), 401
 
 @app.route('/logout', methods=['GET'])
@@ -216,7 +209,6 @@ def create_ride():
 
     for field in required_fields:
         if field not in data:
-            print(f"Missing required field: {field}")
             logging.warning(f"Missing required field: {field}")
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
@@ -311,7 +303,6 @@ def get_rides():
         sorted_rides = filtered_rides
 
     logging.info(f"Returning {len(sorted_rides)} sorted rides")
-    print(sorted_rides)
 
     return jsonify([ride.to_json() for ride in sorted_rides])
 
@@ -509,9 +500,7 @@ def get_ride_requesters(ride_id):
 
 @app.route('/users/rides', methods=['GET', 'POST'])
 def get_user_rides():
-    print("get user rides request received. ")
-    print(request.headers)
-    print(check_authentication(request))
+    logging.info("get user rides request received. ")
     try:
         user = check_authentication(request)
     except Unauthorized as e:
@@ -526,8 +515,6 @@ def get_user_rides():
     requested_rides = user.requested_rides
 
     logging.info(f"User {user.username} data retrieved. Filtering rides by type: {ride_type}")
-
-    print(user)
 
     now = datetime.now()
 
@@ -574,13 +561,12 @@ def rate_members(ride_id):
 
     ride = Ride.query.get_or_404(ride_id)
     data = request.json
-    ratings = data.get('ratings', {})
 
     if user not in ride.members:
         return jsonify({"message": "You are not a member of this ride"}), 403
 
-    for member_id, rating in ratings.items():
-        if not (1 <= rating <= 5):
+    for member_id, rating in data.items():
+        if not (1 <= int(rating) <= 5):
             return jsonify({"message": "Rating must be between 1 and 5"}), 400
         member = User.query.get(member_id)
         if not member or member == user:
@@ -588,16 +574,16 @@ def rate_members(ride_id):
         
         member.ratings.append({
             "rated_by": user.user_id,
-            "rating": rating,
+            "rating": int(rating),
             "timestamp": datetime.utcnow().isoformat() + 'Z'
         })
 
-        member.avg_rating = sum(rating['rating'] for rating in member.ratings) / len(member.ratings)
+        member.avg_rating = sum(r['rating'] for r in member.ratings) / len(member.ratings)
 
     db.session.commit()
     return jsonify({"message": "Ratings submitted successfully"}), 200
 
-@app.route('/rides/<int:ride_id>/members', methods=['GET'])
+@app.route('/rides/<int:ride_id>/members_to_rate', methods=['GET'])
 def get_ride_members_to_rate(ride_id):
     try:
         user = check_authentication(request)
