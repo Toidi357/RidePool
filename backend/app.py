@@ -363,7 +363,6 @@ def join_ride(ride_id):
     logging.info(f"User {current_user_id} is attempting to join ride {ride_id}")
     ride = Ride.query.get_or_404(ride_id)
     logging.info(f"Ride {ride_id} retrieved from the database")
-    user = User.query.get_or_404(user.username)
     logging.info(f"User {user.username} retrieved from the database")
 
     logging.info(f"User {user.username} is requesting to join ride {ride_id}")
