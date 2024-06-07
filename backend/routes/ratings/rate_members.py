@@ -16,8 +16,8 @@ def rate_members(ride_id):
     ride = Ride.query.get_or_404(ride_id)
     data = request.json
 
-    if user not in ride.members:
-        return jsonify({"message": "You are not a member of this ride"}), 403
+    if user not in ride.members and user.user_id != ride.creator_id:
+        return jsonify({"message": "You are not a part of this ride"}), 403
 
     for member_id, rating in data.items():
         if not (1 <= int(rating) <= 5):
@@ -27,8 +27,16 @@ def rate_members(ride_id):
         if not member or member == user:
             return jsonify({"message": "Invalid member ID or you cannot rate yourself"}), 400
         
-        member.rating_sum += rating
-        member.num_ratings += 1
+        if not member.rating_sum: 
+            member.rating_sum = int(rating)
+        else:
+            member.rating_sum += int(rating)
+
+        if not member.num_ratings or not member.rating_sum:
+            member.num_ratings = 1
+        else:
+            member.num_ratings += 1
+
         member.avg_rating = member.rating_sum / member.num_ratings
 
         db.session.commit()
