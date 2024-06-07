@@ -3,12 +3,8 @@ from config import app, db
 from models import User, Ride
 from datetime import datetime
 import logging
-from dateutil import parser
 
-from sqlalchemy.orm import aliased
-from sqlalchemy import func
 from datetime import datetime
-from geopy.distance import distance
 
 from flask_migrate import Migrate
 
@@ -16,6 +12,7 @@ from routes import test, gemini_query
 from routes.auth import login, register, logout, refresh_token
 from routes.profile import get_user_profile, update_user_profile
 from routes.users import get_user_rides, get_user_upcoming_rides
+from routes.rides_general import create_ride, get_rides
 
 migrate = Migrate(app, db)
 
@@ -51,127 +48,6 @@ def check_authentication(request) -> User:
     raise Unauthorized('Unauthorized')
 app.config.Unauthorized = Unauthorized
 app.config.check_authentication = check_authentication
-
-@app.route('/rides', methods=['POST'])
-def create_ride():
-    try:
-        user = check_authentication(request)
-    except app.config.Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
-
-    data = request.json
-
-    logging.info(f"User {user.username} is attempting to create a new ride")
-
-    logging.info (f"Received data for ride creation: {data}")
-
-    required_fields = ['pickupLongitude', 'pickupLatitude', 'destinationLongitude', 'destinationLatitude', 'pickupThreshold', 'destinationThreshold', 'earliestPickupTime', 'latestPickupTime', 'maxGroupSize', 'description'] # , 'preferredApps'
-
-    for field in required_fields:
-        if field not in data:
-            logging.warning(f"Missing required field: {field}")
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-
-    new_ride = Ride(
-        creator_id=user.user_id,
-        pickup_longitude=data['pickupLongitude'],
-        pickup_latitude=data['pickupLatitude'],
-        destination_longitude=data['destinationLongitude'],
-        destination_latitude=data['destinationLatitude'],
-        pickup_threshold=data['pickupThreshold'],
-        destination_threshold=data['destinationThreshold'],
-        # earliest_arrival_time=datetime.fromisoformat(data['earliestArrivalTime']),
-        # latest_arrival_time=datetime.fromisoformat(data['latestArrivalTime']),
-        earliest_pickup_time=parser.isoparse(data['earliestPickupTime']),
-        latest_pickup_time=parser.isoparse(data['latestPickupTime']),
-        max_group_size=data['maxGroupSize'],
-        description=data['description'],
-        # preferred_apps=data['preferredApps']
-    )
-
-    new_ride.creator.append(user)
-    new_ride.members.append(user)
-
-
-    db.session.add(new_ride)
-    db.session.commit()
-
-    logging.info (f"New ride created succesfully: {new_ride.to_json()}")
-    return jsonify(new_ride.to_json()), 201
-
-@app.route('/rides/search', methods=['POST'])
-def get_rides():
-    try:
-        user = check_authentication(request)
-    except app.config.Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
-    
-    data = request.json
-    desired_pickup_latitude = float(data.get('desiredPickupLatitude'))
-    desired_pickup_longitude = float(data.get('desiredPickupLongitude'))
-    desired_destination_latitude = float(data.get('desiredDestinationLatitude'))
-    desired_destination_longitude = float(data.get('desiredDestinationLongitude'))
-    min_date = data.get('minDate', datetime.now())
-    max_date = data.get('maxDate', datetime.max)
-    pickup_radius_threshold = data.get('pickupRadiusThreshold', float('inf'))
-    dropoff_radius_threshold = data.get('dropoffRadiusThreshold', float('inf'))
-    sort_by = data.get('sortBy', None)
-
-    
-    if not desired_destination_latitude or not desired_destination_longitude:
-        return jsonify({"error": "Missing desired destination location"}), 400
-
-    # FIX THIS START
-    subquery = (
-        db.session.query(Ride.ride_id, func.count(Ride.members).label('member_count'))
-        .group_by(Ride.ride_id)
-        .subquery()
-    )
-    RideAlias = aliased(Ride, subquery)
-    
-    rides = db.session.query(Ride).join(
-        subquery, Ride.ride_id == subquery.c.ride_id
-    ).filter(
-        (Ride.earliest_pickup_time >= min_date) &
-        (Ride.latest_pickup_time <= max_date) &
-        (Ride.creator_id != user.user_id) &
-        (subquery.c.member_count < Ride.max_group_size)
-    ).all()
-    # FIX THIS END
-
-    logging.info(f"Retrieved {len(rides)} rides from the database")
-
-    print(type(desired_pickup_latitude), desired_pickup_latitude)
-    print(type(desired_pickup_longitude), desired_pickup_longitude)
-    print(type(desired_destination_latitude), desired_destination_latitude)
-    print(type(desired_destination_longitude), desired_destination_longitude)
-
-    # filter by radii
-    filtered_rides = [
-        ride for ride in rides
-        if distance((desired_pickup_latitude, desired_pickup_longitude),
-                    (ride.pickup_latitude, ride.pickup_longitude)).miles <= int(pickup_radius_threshold) and
-           distance((desired_destination_latitude, desired_destination_longitude),
-                    (ride.destination_latitude, ride.destination_longitude)).miles <= int(dropoff_radius_threshold)
-    ]
-
-    logging.info(f"Filtered down to {len(filtered_rides)} rides based on radius thresholds")
-
-    # sort filtered rides by key
-    if sort_by == 'pickup_location':
-        sorted_rides = sorted(filtered_rides, key=lambda ride: distance((desired_pickup_latitude, desired_pickup_longitude),
-                                                                        (ride.pickup_latitude, ride.pickup_longitude)).miles)
-    elif sort_by == 'destination_location':
-        sorted_rides = sorted(filtered_rides, key=lambda ride: distance((desired_destination_latitude, desired_destination_longitude),
-                                                                        (ride.destination_latitude, ride.destination_longitude)).miles)
-    elif sort_by == 'pickup_time':
-        sorted_rides = sorted(filtered_rides, key=lambda ride: ride.earliest_pickup_time)
-    else: # no valid sorting key provided
-        sorted_rides = filtered_rides
-
-    logging.info(f"Returning {len(sorted_rides)} sorted rides")
-
-    return jsonify([ride.to_json() for ride in sorted_rides])
 
 @app.route('/rides/<int:ride_id>', methods=['PUT'])
 def update_ride(ride_id):
