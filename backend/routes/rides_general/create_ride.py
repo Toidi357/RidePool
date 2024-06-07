@@ -43,10 +43,12 @@ def create_ride():
         # preferred_apps=data['preferredApps']
     )
 
-    new_ride.creator.append(user)
+    db.session.add(new_ride)
+    
+
+    # new_ride.creator.append(user)
     new_ride.members.append(user)
 
-    db.session.add(new_ride)
     db.session.commit()
 
     logging.info (f"New ride created succesfully: {new_ride.to_json()}")

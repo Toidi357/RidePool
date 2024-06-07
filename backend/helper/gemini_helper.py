@@ -43,7 +43,7 @@ def get_closest_ride():
     for ride in all_rides:
         ride_location = (ride.pickup_latitude, ride.pickup_longitude)
         user_location = (latitude, longitude)
-        distance = geodesic (user_location, ride_location).miles
+        distance = 3 #geodesic (user_location, ride_location).miles
         if distance < min_distance:
             min_distance = distance
             closest_ride = ride

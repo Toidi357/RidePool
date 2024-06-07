@@ -58,7 +58,6 @@ const RidepoolForm = () => {
     }
 
     try {
-      console.log(`requesting http://${SERVER_IPV4_ADDRESS}:${SERVER_PORT}/rides`)
       const response = await sendAuthorizedPostRequest('/rides', form)
       console.log(response)
 
