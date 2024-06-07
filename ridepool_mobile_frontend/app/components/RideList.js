@@ -51,6 +51,7 @@ const RideCard = ({ ride, displayRelationship }) => {
     }
     }
     const [currentRides, setCurrentRides] = useState(null)
+    const [requested, setRequested] = useState(false);
     const onLeave = async (rideId) => {
       try {
         await sendAuthorizedPostRequest(`/rides/${rideId}/leave`);
@@ -59,6 +60,14 @@ const RideCard = ({ ride, displayRelationship }) => {
       }
     };
 
+    const handleRequest = () => {
+      setRequested(true);
+    };
+
+    const unRequest = () => {
+      setRequested(false);
+    }
+
   return (
     <Card style={styles.card}>
       <Card.Content>
@@ -66,6 +75,24 @@ const RideCard = ({ ride, displayRelationship }) => {
         {displayRelationship ? (<Paragraph style={styles.italics}>{status}</Paragraph>) : (<></>) }
         <Paragraph>{ride.members.length} / {ride.maxGroupSize} riders</Paragraph>
         <Paragraph>Description: {ride.description.substring(0, 50)}...</Paragraph>
+        {(ride.relationship !== "member" && ride.relationship !== "creator") &&(
+        <View style={styles.buttonContainer}>
+          {requested ? (
+            <>
+              <Button mode="contained" disabled>
+                Requested
+              </Button>
+              <Button mode="contained" onPress={unRequest}>
+                Leave
+              </Button>
+            </>
+          ) : (
+            <Button mode="contained" onPress={handleRequest}>
+              Request
+            </Button>
+          )}
+        </View>
+        )}
       </Card.Content>
       {ride.relationship === "member" && (
         <Card.Actions>
@@ -109,5 +136,10 @@ const styles = StyleSheet.create({
   },
   italics: {
     fontStyle: 'italic',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10,
   }
 });
