@@ -11,20 +11,21 @@ from config import db
 
 @app.route('/rides/search', methods=['POST'])
 def get_rides():
-    try:
-        user = app.config.check_authentication(request)
-    except app.config.Unauthorized as e:
-        return jsonify({"message": e.args[0]}), 401
-    
+    # try:
+    #     user = app.config.check_authentication(request)
+    # except app.config.Unauthorized as e:
+    #     return jsonify({"message": e.args[0]}), 401
+    from dateutil import parser
+
     data = request.json
     desired_pickup_latitude = float(data.get('desiredPickupLatitude'))
     desired_pickup_longitude = float(data.get('desiredPickupLongitude'))
     desired_destination_latitude = float(data.get('desiredDestinationLatitude'))
     desired_destination_longitude = float(data.get('desiredDestinationLongitude'))
-    min_date = data.get('minDate', datetime.datetime.now())
-    max_date = data.get('maxDate', datetime.datetime.max)
-    pickup_radius_threshold = data.get('pickupRadiusThreshold', float('inf'))
-    dropoff_radius_threshold = data.get('dropoffRadiusThreshold', float('inf'))
+    min_date = data.get('minDate')
+    max_date = data.get('maxDate')
+    pickup_radius_threshold = float(data.get('pickupRadiusThreshold', float('inf')))
+    dropoff_radius_threshold = float(data.get('dropoffRadiusThreshold', float('inf')))
     sort_by = data.get('sortBy', None)
 
     
@@ -32,38 +33,59 @@ def get_rides():
         return jsonify({"error": "Missing desired destination location"}), 400
 
     # FIX THIS START
-    subquery = (
-        db.session.query(Ride.ride_id, func.count(Ride.members).label('member_count'))
-        .group_by(Ride.ride_id)
-        .subquery()
-    )
-    RideAlias = aliased(Ride, subquery)
-    
-    rides = db.session.query(Ride).join(
-        subquery, Ride.ride_id == subquery.c.ride_id
-    ).filter(
-        (Ride.earliest_pickup_time >= min_date) &
-        (Ride.latest_pickup_time <= max_date) &
-        (Ride.creator_id != user.user_id) &
-        (subquery.c.member_count < Ride.max_group_size)
-    ).all()
     # FIX THIS END
 
-    logging.info(f"Retrieved {len(rides)} rides from the database")
+    # logging.info(f"Retrieved {len(rides)} rides from the database")
 
-    print(type(desired_pickup_latitude), desired_pickup_latitude)
-    print(type(desired_pickup_longitude), desired_pickup_longitude)
-    print(type(desired_destination_latitude), desired_destination_latitude)
-    print(type(desired_destination_longitude), desired_destination_longitude)
+    # print(type(desired_pickup_latitude), desired_pickup_latitude)
+    # print(type(desired_pickup_longitude), desired_pickup_longitude)
+    # print(type(desired_destination_latitude), desired_destination_latitude)
+    # print(type(desired_destination_longitude), desired_destination_longitude)
 
-    # filter by radii
+    # # filter by radii
+    # filtered_rides = [
+    #     ride for ride in rides
+    #     if distance((desired_pickup_latitude, desired_pickup_longitude),
+    #                 (ride.pickup_latitude, ride.pickup_longitude)).miles <= int(pickup_radius_threshold) and
+    #        distance((desired_destination_latitude, desired_destination_longitude),
+    #                 (ride.destination_latitude, ride.destination_longitude)).miles <= int(dropoff_radius_threshold)
+    # ]
+
+    # Fetch all rides and filter using Python
+    # Custom string date comparison function
+    def compare_dates(date_str1, date_str2):
+        return date_str1 >= date_str2
+
+    # Fetch all rides and filter using Python
+    all_rides = db.session.query(Ride).all()
+
+    # Filter based on the criteria
     filtered_rides = [
-        ride for ride in rides
-        if distance((desired_pickup_latitude, desired_pickup_longitude),
-                    (ride.pickup_latitude, ride.pickup_longitude)).miles <= int(pickup_radius_threshold) and
-           distance((desired_destination_latitude, desired_destination_longitude),
-                    (ride.destination_latitude, ride.destination_longitude)).miles <= int(dropoff_radius_threshold)
+        ride for ride in all_rides
+        if compare_dates(ride.earliest_pickup_time.isoformat(), min_date) and
+        compare_dates(max_date, ride.latest_pickup_time.isoformat()) and
+        # ride.creator_id != user.user_id and
+        len(ride.members) < ride.max_group_size
     ]
+
+    # Additional radius filtering in Python (optional based on your use case)
+    def within_threshold(lat1, lon1, lat2, lon2, threshold):
+        # Using a simplified distance formula (not accurate for long distances or near poles)
+        return ((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2) ** 0.5 <= threshold
+
+    if float(pickup_radius_threshold) < float('inf'):
+        filtered_rides = [
+            ride for ride in filtered_rides
+            if within_threshold(ride.pickup_latitude, ride.pickup_longitude, desired_pickup_latitude, desired_pickup_longitude, pickup_radius_threshold)
+        ]
+
+    if float(dropoff_radius_threshold) < float('inf'):
+        filtered_rides = [
+            ride for ride in filtered_rides
+            if within_threshold(ride.destination_latitude, ride.destination_longitude, desired_destination_latitude, desired_destination_longitude, dropoff_radius_threshold)
+        ]
+
+
 
     logging.info(f"Filtered down to {len(filtered_rides)} rides based on radius thresholds")
 

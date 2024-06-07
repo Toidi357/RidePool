@@ -41,7 +41,7 @@ const ActiveRides = ({ route }) => {
             {(ride.relationship === "creator") && (
                 <>
                     <Text style={styles.title}>Member Requests</Text>
-                    {error ? <Text style={styles.error}>{error}</Text> : <UserList users={requesters} />}
+                    {error ? <Text style={styles.error}>{error}</Text> : <UserList users={requesters} requesters={requesters} rideId={rideId} />}
                 </>
             )}   
             <Text style={styles.title}>Active Ride Members</Text>
