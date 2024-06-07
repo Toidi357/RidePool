@@ -1,19 +1,20 @@
 from flask import request, jsonify
-from config import app, db, bcrypt
+from config import app, db
 from models import User, Ride, BlacklistToken
 from datetime import datetime
 import logging
-
 from dateutil import parser
 
 from sqlalchemy.orm import aliased
 from sqlalchemy import func
 from datetime import datetime
-from geolocation import get_location
-from gemini_helper import query_gemini_ai
+from helper.gemini_helper import query_gemini_ai
 from geopy.distance import distance
 
 from flask_migrate import Migrate
+
+from routes import test, register, login
+
 migrate = Migrate(app, db)
 
 
@@ -22,7 +23,7 @@ logging.basicConfig(level = logging.DEBUG, format = '%(asctime)s - %(levelname)s
 class Unauthorized(Exception):
     def __init__(self, message):
         super().__init__(message)
-
+    
 def check_authentication(request) -> User:
     auth_header = request.headers.get('Authorization')
     if auth_header:
@@ -46,73 +47,7 @@ def check_authentication(request) -> User:
             raise Unauthorized(resp)
     
     raise Unauthorized('Unauthorized')
-
-@app.route('/test', methods = ['GET']) 
-def test():
-    return jsonify({'response': 'connection successful'})
-
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-
-    logging.info(f"Received registration request: {data}")
-
-    required_fields = ['username', 'password', 'firstName', 'lastName', 'email', 'phoneNumber']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-
-    # check if user already exists
-    user = User.query.filter_by(username=data['username']).first()
-    if user:
-        return jsonify({"error": f"User already exists. Please log in."}), 409
-
-    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-    new_user = User(
-        username=data['username'],
-        password=hashed_password,
-        first_name=data['firstName'],
-        last_name=data['lastName'],
-        email=data['email'],
-        phone_number=data['phoneNumber']
-    )
-    db.session.add(new_user)
-    db.session.commit()
-    logging.info(f"User registered succesfully: {new_user.username}")
-    auth_token = new_user.encode_auth_token(new_user.username)
-    return jsonify({"message": "User registered successfully", "auth_token": auth_token}), 201
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-
-    logging.info(f"Received login request data: {data}")
-
-    if not data.get('username') or not data.get('password'):
-        return jsonify({"error": "Both username and password are required"}), 400
-
-    user = User.query.filter_by(username=data['username']).first()
-    if user and bcrypt.check_password_hash(user.password, data['password']):
-        auth_token = user.encode_auth_token(user.username)
-        
-        if auth_token:
-            responseObject = {
-                'message': 'Successfully logged in.',
-                'auth_token': auth_token,
-            }
-            # Capture the location
-            location_data = get_location()
-            user.latitude = location_data['location']['lat']
-            
-            user.longitude = location_data['location']['lng']
-
-            return jsonify(responseObject), 200
-        
-        logging.info(f"User {user.username} logged in succesfully")
-        return jsonify({"message": "Login successful"}), 200
-    
-    logging.warning("Invalid login credentials")
-    return jsonify({"message": "Invalid credentials"}), 401
+app.config.check_authentication = check_authentication
 
 @app.route('/logout', methods=['GET'])
 def logout():

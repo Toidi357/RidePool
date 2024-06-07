@@ -5,7 +5,7 @@ from flask import request
 from geopy.distance import geodesic
 from collections import Counter
 
-from geolocation import get_location
+from .geolocation import get_location
 
 
 genai.configure(api_key = 'AIzaSyCYNiJhJpxL8Oth-JnVvBAqBhDGNE8lHeI')
