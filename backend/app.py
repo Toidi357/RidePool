@@ -580,8 +580,8 @@ def rate_members(ride_id):
         })
 
         member.avg_rating = sum(r['rating'] for r in member.ratings) / len(member.ratings)
+        db.session.commit()
 
-    db.session.commit()
     return jsonify({"message": "Ratings submitted successfully"}), 200
 
 @app.route('/rides/<int:ride_id>/members_to_rate', methods=['GET'])
