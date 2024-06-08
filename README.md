@@ -5,11 +5,13 @@
 
  ## Frontend
  
- - get your computer's ipv4 address (ipconfig or ifconfig commands)
+ - Get your computer's ipv4 address (ipconfig or ifconfig commands)
  
  - replace SERVER_IPV4_ADDRESS variable in `ridepool_mobile_frontend/config.js`
 
- - install expo go on your mobile device
+ - Install Expo Go on your mobile device
+
+ Run these commands in terminal:
 
  `cd ridepool_mobile_frontend`
 
@@ -17,11 +19,13 @@
  
  `npx expo start`
  
- - make sure your mobile phone & PC are on the same network. Personal network will work much better than UCLA WIFI or eduroam. Starting a hotspot on your phone and joining with your PC can also work well.
+ - Make sure your mobile phone & PC are on the same network. Personal network will work much better than UCLA WIFI or eduroam. Starting a hotspot on your phone and joining with your PC can also work well.
  
- - use the expo go app to scan the QR code that pops up
+ - use the Expo Go app to scan the QR code that pops up after running `npx expo start`
 
  ## Backend:
+
+ In a separate terminal, please run this. We used Python version >= 3.7
  
  `cd backend`
 
