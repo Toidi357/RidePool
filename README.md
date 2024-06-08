@@ -1,6 +1,30 @@
 # RidePool
  RidePool 35L Final Project
 
+ ### Mappings of Group Members to Emails used in Commits
+
+ Minh Trinh (MT-GoCode)
+
+ tminh.us@gmail.com
+
+ Guatam Nair (gnair11)
+ 
+ gnair11@g.ucla.edu
+ 
+ Kevin Lu (Toidi357)
+ 
+ toidi357@gmail.com
+ 
+ Harsh Patil (HarshPatil32)
+ 
+ patilsharsh@gmail.com
+
+ Aditya Gupta (agupta2025)
+
+ agupta25@g.ucla.edu
+
+
+
  # First-Time Run:
 
  `git clone https://github.com/agupta2025/RidePool.git`
