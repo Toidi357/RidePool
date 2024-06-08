@@ -23,7 +23,7 @@
 
  ## Backend:
  
- `cd backendc
+ `cd backend`
 
  `pip install requirements.txt`
  
