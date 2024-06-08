@@ -3,6 +3,10 @@
 
  # First-Time Run:
 
+ `git clone https://github.com/agupta2025/RidePool.git`
+
+ `cd RidePool`
+
  ## Frontend
  
  - Get your computer's ipv4 address (ipconfig or ifconfig commands)
@@ -29,9 +33,15 @@
  
  `cd backend`
 
- `pip install requirements.txt`
+ `pip install -r requirements.txt`
  
  `python app.py`
+
+ ## Playing around / testing
+
+ Please follow along to [this demo video](https://drive.google.com/file/d/11wAhnkslSvtbh3b5Xt075JrLjpx4Moht/view?usp=drive_link)
+
+ There should already be some sample data and users to play around with. You can log in with username "u1", password "p1", to get started.
 
  ### This is the end of instructions to run the app. Below are more troubleshooting tips and info for developers.
 
