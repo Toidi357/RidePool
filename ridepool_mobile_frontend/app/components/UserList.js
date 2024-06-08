@@ -1,19 +1,21 @@
 // UserList.js
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, StyleSheet } from 'react-native';
+import { ScrollView, Text, StyleSheet, View } from 'react-native';
 import { Card, Paragraph, Button } from 'react-native-paper';
 import { sendAuthorizedPostRequest, sendAuthorizedGetRequest } from "../components/sendRequest"
 
-
-const acceptRequester = async (requesterId, rideId) => {
-    try {
-        await sendAuthorizedPostRequest(`/rides/${rideId}/accept_requester/${requesterId}`);
-    } catch (err) {
-        console.error('Failed to accept requester: ', err);
-    }
-}
-
 const UserCard = ({ user, requesters = [], rideId }) => {
+    const [accepted, setAccepted] = useState(false);
+
+    const acceptRequester = async (requesterId, rideId) => {
+        try {
+            await sendAuthorizedPostRequest(`/rides/${rideId}/accept_requester/${requesterId}`);
+            setAccepted(true);
+        } catch (err) {
+            console.error('Failed to accept requester: ', err);
+        }
+    }
+
     const isRequester = requesters.some(requester => requester.userId === user.userId);
     return (
         <Card style={styles.card}>
@@ -24,9 +26,13 @@ const UserCard = ({ user, requesters = [], rideId }) => {
                 <Paragraph style={styles.userRating}>Rating: {user.averageRating}</Paragraph>
                 <Paragraph style={styles.userRating}>Phone Number: {user.phoneNumber}</Paragraph>
                 {isRequester && (
-                    <Card.Actions>
-                        <Button mode="contained" onPress={() => acceptRequester(user.userId, rideId)}>Accept</Button>
-                    </Card.Actions>
+                    <View style={styles.buttonContainer}>
+                        {(!accepted) ? (
+                            <Button mode="contained" onPress={() => acceptRequester(user.userId, rideId)}>Accept</Button>
+                        ) : (
+                            <Button mode="contained" disabled style={styles.disabledButton}>Accepted</Button>
+                        )}
+                    </View>
                 )}
             </Card.Content>
         </Card>
@@ -58,6 +64,11 @@ const styles = StyleSheet.create({
     userRating: {
         fontSize: 16,
     },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 10,
+      },
 });
 
 export default UserList;
