@@ -47,8 +47,8 @@ const RidepoolForm = () => {
       'pickupLatitude': pickupLocation['lat'].substring(0, 6),
       'destinationLongitude': destinationLocation['lon'].substring(0, 6),
       'destinationLatitude': destinationLocation['lat'].substring(0, 6),
-      'pickupThreshold': pickupRadius,
-      'destinationThreshold': destinationRadius,
+      'pickupThreshold': 0,
+      'destinationThreshold': 0,
       'earliestPickupTime': earliestPickupTime,
       'latestPickupTime': latestPickupTime,
       'maxGroupSize': maxGroupSize,
@@ -75,21 +75,21 @@ const RidepoolForm = () => {
   return (
     <ScrollView style={styles.container}>
       <LocationInput label="Pickup location" onLocationSelected={setPickupLocation} />
-      <TextInput
+      {/* <TextInput
         label="Pickup radius (miles)"
         value={pickupRadius}
         onChangeText={text => setPickupRadius(text)}
         keyboardType="decimal-pad"
         style={{ marginBottom: 10 }}
-      />
+      /> */}
       <LocationInput label="Destination location" onLocationSelected={setDestinationLocation} />
-      <TextInput
+      {/* <TextInput
         label="Destination radius (miles)"
         value={destinationRadius}
         onChangeText={text => setDestinationRadius(text)}
         keyboardType="decimal-pad"
         style={{ marginBottom: 10 }}
-      />
+      /> */}
       <View style={styles.dateTimeContainer}>
         <Text style={styles.label}>Earliest pickup time:</Text>
         <Text style={styles.dateTime}>{earliestPickupTime.toLocaleString()}</Text>

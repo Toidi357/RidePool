@@ -5,7 +5,7 @@
 
  ## Frontend
  
- - get ipv4 address (ipconfig or ifconfig commands)
+ - get your computer's ipv4 address (ipconfig or ifconfig commands)
  
  - replace SERVER_IPV4_ADDRESS variable in `ridepool_mobile_frontend/config.js`
 
@@ -17,17 +17,27 @@
  
  `npx expo start`
  
- - make sure your mobile phone & PC are on the same network
+ - make sure your mobile phone & PC are on the same network. Personal network will work much better than UCLA WIFI or eduroam. Starting a hotspot on your phone and joining with your PC can also work well.
  
  - use the expo go app to scan the QR code that pops up
 
- Alternatively, if expo doesn't connect, you can try:
+ ## Backend:
+ 
+ `cd backendc
+
+ `pip install requirements.txt`
+ 
+ `python app.py`
+
+ ### This is the end of instructions to run the app. Below are more troubleshooting tips and info for developers.
+
+ ## Other solutions if Expo doesn't load (Expo can be finicky, it's not our fault.)
+
+  Alternatively, if expo doesn't connect, you can try:
 
  - entering the "exp:" link manually (might look like exp://172.23.53.2:8081)
 
  - running `npx expo --tunnel` and entering the "exp:" link (might look like exp://njzgnlw-anonymous-8081.exp.direct), but this probably means the backend won't function
-
- #### Other solutions if Expo doesn't load (Expo can be finicky, it's not our fault.)
 
  - When you scan the QR code, half the time the expo app doesn't get the request and just times out.
 
@@ -35,7 +45,7 @@
 
  - To confirm it is indeed a networking problem, get the IP address of your phone, then do `ping < IP >` from your PC. If it can't reach, then this is indeed a networking problem. Hah.
 
- ##### Networking fixes.
+ ### Networking fixes.
  
  - It may help to move both devices to a personal/Home network. UCLA Wifi and eduroam have historically been pretty bad.
 
@@ -63,13 +73,6 @@
 
    11) Pray.
  
- ## Backend:
- 
- `cd backend`
- 
- `python app.py`
-
-
  # For Developers
 
  Do all the above steps, but also instll SQLite browser and set it to point to backend/instance/myinstance.db to view the database while the app is running. 
