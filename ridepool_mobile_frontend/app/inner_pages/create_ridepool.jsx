@@ -43,10 +43,10 @@ const RidepoolForm = () => {
     console.log('Form submitted!')
 
     form = {
-      'pickupLongitude': pickupLocation['lat'],
-      'pickupLatitude': pickupLocation['lon'],
-      'destinationLongitude': destinationLocation['lat'],
-      'destinationLatitude': destinationLocation['lon'],
+      'pickupLongitude': pickupLocation['lon'].substring(0, 6),
+      'pickupLatitude': pickupLocation['lat'].substring(0, 6),
+      'destinationLongitude': destinationLocation['lon'].substring(0, 6),
+      'destinationLatitude': destinationLocation['lat'].substring(0, 6),
       'pickupThreshold': pickupRadius,
       'destinationThreshold': destinationRadius,
       'earliestPickupTime': earliestPickupTime,

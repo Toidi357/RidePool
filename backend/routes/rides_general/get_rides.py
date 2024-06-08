@@ -9,6 +9,8 @@ from geopy.distance import distance
 from models import Ride
 from config import db
 
+from datetime import datetime
+
 @app.route('/rides/search', methods=['POST'])
 def get_rides():
     try:
@@ -22,8 +24,10 @@ def get_rides():
     desired_pickup_longitude = float(data.get('desiredPickupLongitude'))
     desired_destination_latitude = float(data.get('desiredDestinationLatitude'))
     desired_destination_longitude = float(data.get('desiredDestinationLongitude'))
-    min_date = data.get('minDate')
-    max_date = data.get('maxDate')
+    iso_string = data.get('minDate')
+    min_date = datetime.strptime(iso_string, '%Y-%m-%dT%H:%M:%S.%fZ') if 'Z' in iso_string else datetime.fromisoformat(iso_string)
+    iso_string = data.get('maxDate')
+    max_date = datetime.strptime(iso_string, '%Y-%m-%dT%H:%M:%S.%fZ') if 'Z' in iso_string else datetime.fromisoformat(iso_string)
     pickup_radius_threshold = float(data.get('pickupRadiusThreshold', float('inf')))
     dropoff_radius_threshold = float(data.get('dropoffRadiusThreshold', float('inf')))
     sort_by = data.get('sortBy', None)
@@ -62,28 +66,46 @@ def get_rides():
     # Filter based on the criteria
     filtered_rides = [
         ride for ride in all_rides
-        if compare_dates(ride.earliest_pickup_time.isoformat(), min_date) and
-        compare_dates(max_date, ride.latest_pickup_time.isoformat()) and
+        if compare_dates(ride.earliest_pickup_time, min_date) and
+        compare_dates(max_date, ride.latest_pickup_time) and
         ride.creator_id != user.user_id and
         len(ride.members) < ride.max_group_size
     ]
+    print("before distance filter")
+    print(filtered_rides)
 
-    # Additional radius filtering in Python (optional based on your use case)
+    # Additional radius filtering in Python
     def within_threshold(lat1, lon1, lat2, lon2, threshold):
-        # Using a simplified distance formula (not accurate for long distances or near poles)
-        return ((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2) ** 0.5 <= threshold
+        # Using a simplified distance formula
+        import math
+        return math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2) <= threshold
 
-    if float(pickup_radius_threshold) < float('inf'):
+    # Ensure thresholds are floats
+    pickup_radius_threshold = float(pickup_radius_threshold)
+    dropoff_radius_threshold = float(dropoff_radius_threshold)
+
+    # Desired locations for pickup and dropoff
+    desired_pickup_latitude = float(desired_pickup_latitude)
+    desired_pickup_longitude = float(desired_pickup_longitude)
+    desired_destination_latitude = float(desired_destination_latitude)
+    desired_destination_longitude = float(desired_destination_longitude)
+
+    
+
+    # Filter rides based on pickup radius threshold
+    if pickup_radius_threshold < float('inf'):
         filtered_rides = [
             ride for ride in filtered_rides
             if within_threshold(ride.pickup_latitude, ride.pickup_longitude, desired_pickup_latitude, desired_pickup_longitude, pickup_radius_threshold)
         ]
 
-    if float(dropoff_radius_threshold) < float('inf'):
+    # Filter rides based on dropoff radius threshold
+    if dropoff_radius_threshold < float('inf'):
         filtered_rides = [
             ride for ride in filtered_rides
             if within_threshold(ride.destination_latitude, ride.destination_longitude, desired_destination_latitude, desired_destination_longitude, dropoff_radius_threshold)
         ]
+
 
 
 
