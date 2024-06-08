@@ -8,11 +8,17 @@ import { sendAuthorizedPostRequest } from '../components/sendRequest'
 
 export default function App() {
 
+
+
   const [error, setError] = useState(null);
   const [currentRides, setCurrentRides] = useState(null)
   const [historyRides, setHistoryRides] = useState(null)
 
   const navigation = useNavigation();
+
+  const reloadScreen = () => {
+    navigation.replace('My Ridepools'); // This will unmount and remount the screen
+  };
 
   useEffect(() => {
     
@@ -52,6 +58,7 @@ export default function App() {
 
   return (
     <ScrollView style={styles.container}>
+      <Button title="Reload Screen" onPress={reloadScreen}>refresh</Button>
       <View style={styles.listContainer}>
         <Button mode="outlined" onPress={() => navigation.navigate('Create Ridepool')}>
           Create Ridepool

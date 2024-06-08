@@ -11,6 +11,10 @@ import { useAuth } from '../components/AuthContext';
 
 
 export default function App(){
+
+  const reloadScreen = () => {
+    navigation.replace('Profile'); // This will unmount and remount the screen
+  };
   const { isLoggedIn, setIsLoggedIn } = useAuth();
   const logOut = () => {
     setIsLoggedIn(false);
@@ -66,6 +70,8 @@ export default function App(){
 
   return (
     <ScrollView style={styles.container}>
+      <Button title="Reload profile" onPress={reloadScreen}>refresh</Button>
+      
       <View style={styles.header}>
         <Text style={styles.usernameText}>{username}</Text>
         <Text style={styles.ratingText}>Rating: {rating}</Text>
