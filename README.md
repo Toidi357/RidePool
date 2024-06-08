@@ -3,6 +3,10 @@
 
  # First-Time Run:
 
+ `git clone https://github.com/agupta2025/RidePool.git`
+
+ `cd RidePool`
+
  ## Frontend
  
  - Get your computer's ipv4 address (ipconfig or ifconfig commands)
