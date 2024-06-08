@@ -33,6 +33,12 @@
  
  `python app.py`
 
+ ## Playing around / testing
+
+ Please follow along to [this demo video](https://drive.google.com/file/d/11wAhnkslSvtbh3b5Xt075JrLjpx4Moht/view?usp=drive_link)
+
+ There should already be some sample data and users to play around with. You can log in with username "u1", password "p1", to get started.
+
  ### This is the end of instructions to run the app. Below are more troubleshooting tips and info for developers.
 
  ## Other solutions if Expo doesn't load (Expo can be finicky, it's not our fault.)
