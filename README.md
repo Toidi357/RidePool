@@ -33,6 +33,10 @@
  
  `cd backend`
 
+ `python3 -m venv myenv`
+
+ `source myenv/bin/activate` (or for Windows, `myenv\Scripts\activate`)
+
  `pip install -r requirements.txt`
  
  `python app.py`
