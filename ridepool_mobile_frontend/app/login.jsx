@@ -156,7 +156,7 @@ export default function Login() {
   return (
     <View style={styles.outerContainer}>
       {error ? (
-        <Text>Error: Network Connection</Text>
+        <Text>Error: Your Network is not set up correctly. Please view the instructions in our Github to setup backend-frontend connection properly.</Text>
       ) : (
         <FormComponent/>
       )}
