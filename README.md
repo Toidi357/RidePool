@@ -128,16 +128,16 @@
  ## Token-based Authentication
 
  ### How it works
- We are using token based authentication since we are a SPA \
- On successful /login and /register requests, you will get returned a token like this: \
- "auth_token": "ey......" \
- This token must be saved somewhere throughout in the frontend and used in all subsequent authenticated API calls (it also expires in 1 hour) \
- You must have this request header to be authenticated: \
- "Authorization": "Bearer {token}" \
- \
+ We are using token based authentication since we are a SPA <br>
+ On successful /login and /register requests, you will get returned a token like this: <br>
+ `"auth_token": "ey......"` <br>
+ This token must be saved somewhere throughout in the frontend and used in all subsequent authenticated API calls (it also expires in 1 hour) <br>
+ You must have this request header to be authenticated: <br>
+ `"Authorization": "Bearer {token}"` <br>
+ <br>
 
  ### Backend
- When developing on the backend, I've created a function called check_authenication that automatically checks if the user is authenticated and if they are, then it returns a User object \
+ When developing on the backend, I've created a function called check_authenication that automatically checks if the user is authenticated and if they are, then it returns a User object <br>
  When developing protected API endpoints, add this code at the beginning:
  ```
  try:
@@ -145,8 +145,8 @@
  except app.config.Unauthorized as e:
     return jsonify({"message": e.args[0]})
  ```
- Now the `user` variable has all the information you'll need \
- \
+ Now the `user` variable has all the information you'll need <br>
+ <br>
 
  ### Frontend
  
